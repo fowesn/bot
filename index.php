@@ -1,30 +1,61 @@
 <?php
 
-// isset() проверяет, установлена ли переменная отличным от NULL значением
-// $_REQUEST - ассоциативный массив (суперглобальный), который содержит данные переменных $_GET, $_POST, $_COOKIE
-// все это нужно здесь для того, чтобы позволить скрипту получить доступ к данным, которые используются в GET и POST запросах, а также к COOKIES
+namespace project;
+//Как я понял, это проверка на то,что скрипт не запушен через shell, ну хотя кто его знает
+//вторая догадка, возможно не существует массива $_GET если перейти по ссылки на страницу без параметров
+
 if (!isset($_REQUEST)) {
-	    return;
+    return;
 }
+//////////////////////////////////////////////////
+/*
+ * Подключение модулей
+ */
+include_once("setting.php");
+//////////////AutoLoader//////////////////////////
 
-// строка для подтверждения адреса сервера из настроек Callback API
-$confirmationToken = '09476c9c';
+spl_autoload_register
+(
+	function ($className) {
+		$siteRoot = dirname(__FILE__);
 
-// ключ доступа сообщества - для обращения к API от имени сообщества
-$communityToken = '36ade04328cb1a2f61bdc53523cf5f17d79b6d1d76edfce7db02a01dc67a6f56c1a8b1cef34b8af77fa66';
+		$classFullName = ltrim
+		(
+			implode
+			(
+				DIRECTORY_SEPARATOR,
+				explode
+				(
+					'\\',
+					$className
+				)
+			),
+			DIRECTORY_SEPARATOR
+		);
 
-// Secret key
-$secretKey = 'kappa_tryout_key';
+		$fileFullName = $siteRoot . DIRECTORY_SEPARATOR . $classFullName . '.php';
 
-// версия vk api
-$version = '5.71';
+		if (!file_exists($fileFullName)) {
+			throw new \Exception ('File ' . $fileFullName . ' not found!');
+		}
 
-//Получаем и декодируем уведомление
- // WHAT IS GOING ON HERE ???
-$data = json_decode(file_get_contents('php://input'));
+		require_once($fileFullName);
+
+		if (!class_exists($className)) {
+			throw new \Exception ('Class ' . $className . ' not found!');
+		}
+	}
+);
+
+
+
+/////////////////////////////////////////////////
+//$data = json_decode(file_get_contents('php://input'));
+//не норма
+/*$data = json_decode($_GET['data']);
 
 // проверяем secretKey
-if(strcmp($data->secret, $secretKey) !== 0 && strcmp($data->type, 'confirmation') !== 0)
+if (strcmp($data->secret, SECRET_KEY) !== 0 && strcmp($data->type, 'confirmation') !== 0)
     return;
 
 //Проверяем, что находится в поле "type"
@@ -32,7 +63,7 @@ switch ($data->type) {
     //Если это уведомление для подтверждения адреса сервера...
     case 'confirmation':
         //...отправляем строку для подтверждения адреса
-        echo $confirmationToken;
+        echo CONFIRMATION_TOKEN;
         break;
 
     //Если это уведомление о новом сообщении...
@@ -42,51 +73,41 @@ switch ($data->type) {
 		{
 			case 'нужна помощь':
 			case 'help me':
-				$request_params = array(
-					'message' => "Пока что я могу мало, но учусь!<br>".
-									"Напиши \"время\", и я скажу тебе, который час",
-					'user_id' => $data->object->user_id,
-					'access_token' => $communityToken,
-					'v' => $version
-					);
+                $garbage = new garbage\HelpRequest($data);
 				
 			break;
 			
 			case 'время':
-			$date = date("H:i:s");
-				$request_params = array(
-					'message' => "Сейчас {$date}",
-					'user_id' => $data->object->user_id,
-					'access_token' => $communityToken,
-					'v' => $version
-					);
+                $garbage = new garbage\TimeRequest($data);
 			break;
 			
 			
 			default:
-				//затем с помощью users.get получаем данные об авторе
-				$userInfo = json_decode(file_get_contents("https://api.vk.com/method/users.get?user_ids={$data->object->user_id}&v={$version}"));
+                //затем с помощью users.get получаем данные об авторе
+               // $garbage = new garbage\ErrorRequest($data);
+                $garbage = new garbage\Test($data);
+        }
 
-				//и извлекаем из ответа его имя
-				$user_name = $userInfo->response[0]->first_name;
 
-				//С помощью messages.send и токена сообщества отправляем ответное сообщение
-				$request_params = array(
-					'message' => "Привет, {$user_name}!<br>".
-									"Если хочешь узнать, что я могу, напиши \"help me\" или \"нужна помощь\"",
-					'user_id' => $data->object->user_id,
-					'access_token' => $communityToken,
-					'v' => $version
-				);
-		}
-
-			$get_params = http_build_query($request_params);
+        $get_params = http_build_query($garbage->getResult());
 
 			file_get_contents('https://api.vk.com/method/messages.send?' . $get_params);
 
 		//Возвращаем "ok" серверу Callback API
+
 		echo('ok');
 
     break;
 }
+*/
+try {
+	echo "<pre>";
+	echo var_dump(\api\Api::getUserInfo(array("user_id" => 0, 'fields' => 'photo_50,city,verified'))) . "</pre>";
+} catch (\api\RequestError $err) {
+	echo $err->getMessage() . "<br>";
+	echo $err->getCode();
+} catch (\Exception $err) {
+	echo $err->getMessage();
+}
 ?>
+
