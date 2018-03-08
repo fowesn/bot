@@ -24,3 +24,12 @@ define("VERSION_VK_API", "5.71");
 /*
  * Константы для работы с DB
  */
+// адрес сервера
+define("DBADDRESS", "localhost");
+// логин пользователя
+define("DBLOGIN", "root");
+// пароль пользователя
+define("DBPASS", "");
+// название базы данных
+define("DBNAME", "bot");
+

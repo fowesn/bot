@@ -58,17 +58,19 @@ $data = json_decode($_GET['data']);
 
 
 try {
-
 	CallbackApi::run($data);
-
+	echo "ok";
 } catch (\api\SecurityBreach $err) {
 	echo $err->getMessage();
+	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
 
 } catch (\api\EventNotSupported $err) {
 	echo $err->getMessage();
+	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
 
 } catch (\Exception $err) {
 	$err->getMessage();
+	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
 }
 ?>
 

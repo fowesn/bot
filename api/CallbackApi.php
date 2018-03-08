@@ -9,6 +9,7 @@
 namespace api;
 
 include_once "handler/message_new.php";
+include_once "handler/confirmation.php";
 
 /**
  * Class CallbackApi Реализует распределение запросов событий по модулям обработки.
