@@ -35,7 +35,7 @@ class message_new implements iHandler
                 //обращение к интерфейсу бд, передать user_message[1]
                 break;
             default:
-                if (!preg_match("/^\d+$/", $user_message[0]))
+                if (preg_match("/^\d+$/", $user_message[0]))
                     //$user_message[1] - ответ
                     //модуль проверки ответа, передать user_message[1]
                     \api\Api::messageSend ( \test::run ( $data ) );
