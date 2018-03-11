@@ -6,7 +6,7 @@
  * Time: 16:46
  */
 
-class test implements iHandler {
+class test {
 
     public static function run($data) {
         $message = "Ты воняешь рыбой";
