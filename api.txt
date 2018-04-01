@@ -1,0 +1,493 @@
+функции в api:
+
+	запросить задание 
+		1 аргумент (необязательный): 
+			NULL - случайное задание
+			число [1, 27] - номер задания в КИМе
+			строка - категория
+		2 аргумент (необязательный):
+			NULL - при использовании в сервисах без учета пользователя
+			число - id ВКонтакте (или в телеге какой-нибудь)
+		если есть второй аргумент,
+			
+	запросить решение
+		1 аргумент (обязательный):
+			id задания в БД
+		2 аргумент (необязательный):
+			NULL - при использовании в сервисах без учета пользователя
+			число - id ВКонтакте (или в телеге какой-нибудь)
+			
+	запросить ответ (по id задания)
+		1 аргумент (обязательный):
+			id задания в БД
+		2 аргумент (необязательный):
+			NULL - при использовании в сервисах без учета пользователя
+			число - id ВКонтакте (или в телеге какой-нибудь)
+			
+	проверить ответ (по id задания)
+		1 аргумент (обязательный):
+			id задания в БД
+		2 аргумент (необязательный):
+			NULL - при использовании в сервисах без учета пользователя
+			число - id ВКонтакте (или в телеге какой-нибудь)
+			
+	запросить справку и категории
+	
+	добавить задание КИМа (абстрактное, examItem)
+	
+	добавить категорию? (problemType)
+	
+	добавить задание (конкретное, problem)
+	
+getProblem()
+	IN json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"task_id":
+		{
+			"type": "integer",
+			"description": "if type is empty (NULL), gets random problem; if type is an integer in range [1, 27], gets a problem by its number in exam variant; if type is a string, gets a problem by its category"
+		},
+		"user_id":
+		{
+			"type": "integer",
+			"description": "contains ID of the user, who requested a task (VK, Telegram...); otherwise empty (NULL)" 
+		},
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}
+	}
+	
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		},
+		"data":
+		{
+			"statement":
+			{
+				"type": "string",
+				"description": "contains text or image link"
+			}
+			
+			///////////////// ИЛИ ////////////////////
+			
+			"text":
+			{
+				"type": "string",
+				"description": "contains text of a statement"
+			},
+			"link":
+			{
+				"type": "string",
+				"description": "contains link to the image"
+			}
+		}
+	}
+	
+getSolution()
+	IN json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"problem_id":
+		{
+			"type": "integer",
+			"description": "contains ID of a problem"
+		},
+		"user_id":
+		{
+			"type": "integer",
+			"description": "contains ID of the user, who requested a solution (VK, Telegram...); otherwise empty (NULL);" 
+		}
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		},
+		"data":
+		{
+			"solution":
+			{
+				"type": "string",
+				"description": "contains text or image link"
+			}
+			
+			///////////////// ИЛИ ////////////////////
+			
+			"text":
+			{
+				"type": "string",
+				"description": "contains text of a solution"
+			},
+			"link":
+			{
+				"type": "string",
+				"description": "contains link to the image"
+			}
+		}
+	}
+
+getAnswer()
+	IN json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"problem_id":
+		{
+			"type": "integer",
+			"description": "contains ID of a problem"
+		},
+		"user_id":
+		{
+			"type": "integer",
+			"description": "contains ID of the user, who requested an answer (VK, Telegram...); otherwise empty (NULL);" 
+		}
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		},
+		"data":
+		{
+			"answer":
+			{
+				"type": "string",
+				"description": "contains text or image link"
+			}
+			
+			///////////////// ИЛИ ////////////////////
+			
+			"text":
+			{
+				"type": "string",
+				"description": "contains text of an answer"
+			},
+			"link":
+			{
+				"type": "string",
+				"description": "contains link to the image"
+			}
+		}
+	}
+	
+checkAnswer()
+	IN json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"problem_id":
+		{
+			"type": "integer",
+			"description": "contains ID of a problem"
+		},
+		"user_id":
+		{
+			"type": "integer",
+			"description": "contains ID of the user, who requested a checkup (VK, Telegram...); otherwise empty (NULL);" 
+		}
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		},
+		"data":
+		{
+			"result":
+			{
+				"type": "boolean",
+				"description": "contains true if the right answer was given, otherwise false"
+			}
+		}
+	}
+	
+addExamItem()	
+	IN json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"id":
+		{
+			"type": "integer",
+			"description": "contains an ID of a record that needs to be changed; to add a new record set empty (NULL)"
+		},		
+		"number":
+		{
+			"type": "integer" / "string" (DECIDE!),
+			"description": "serial number of an exam item in an exam variant"
+		},
+		"desc":
+		{
+			"type": "string",
+			"description": "some kind of a task's category?"
+		},
+		"exam_id":
+		{
+			// here's a problem
+			"type": "integer",
+			"description": "exam's ID (FK exam)"
+		},
+		"score":
+		{
+			"type": "integer",
+			"description": "points user gets for a right answer"
+		},
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		}
+	}
+	
+addProblemType()
+	json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"id":
+		{
+			"type": "integer",
+			"description": "contains an ID of a record that needs to be changed; to add a new record set empty (NULL)"
+		},					
+		"desc":
+		{
+			"type": "string",
+			"description": "more precise than an exam_item.desc?"
+		},
+		"exam_item_id":
+		{
+			"type": "integer";
+			"description": "exam_item's ID (FK exam_item)"
+		},
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		}
+	}
+	
+addProblem()
+	json:
+	{
+		"argsCount":
+		{
+			"type": "integer",
+			"description": "number of arguments used when calling a method"
+		},
+		"id":
+		{
+			"type": "integer",
+			"description": "contains an ID of a record that needs to be changed; to add a new record set empty (NULL)"
+		},		
+		"statement":
+		{
+			"type": "string",
+			"description": "text or image url"
+		},
+		"answer":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		},
+		"solution":
+		{
+			"type": "string",
+			"description": "text or image url"
+		},
+		"created":
+		{
+			"type": "integer",
+			"description": " 'timestamp' in database is a 4-byte integer equal to number of seconds since 01.01.1970"
+		},
+		"modified":
+		{
+			"type": "integer",
+			"description": " 'timestamp' in database is a 4-byte integer equal to number of seconds since 01.01.1970"
+		},
+		"API version":
+		{
+			"type": "string",
+			"description": "do you need one?"
+		}		
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		}
+	}
+	
+assignItem()
+не надо
+	json:
+	{
+		"type": "object",
+		"properties":
+		{	
+			///////////
+			we don't need ID here, cuz it's autoinc
+			//////////
+			
+			"user_id":
+			{
+				"type": "integer",
+				"description": "VK user ID"
+			},
+			"problem_id":
+			{
+				"type": "integer",
+				"description": "problem ID (FK problem)"
+			},
+			"assigned":
+			{
+				"type": "integer",
+				"description": " 'timestamp' in database is a 4-byte integer equal to number of seconds since 01.01.1970"
+			}
+		}
+	}
+	
+
+	
