@@ -286,11 +286,6 @@ checkAnswer()
 addExamItem()	
 	IN json:
 	{
-		"argsCount":
-		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
 		"id":
 		{
 			"type": "integer",
@@ -346,11 +341,6 @@ addExamItem()
 addProblemType()
 	json:
 	{
-		"argsCount":
-		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
 		"id":
 		{
 			"type": "integer",
@@ -395,11 +385,6 @@ addProblemType()
 addProblem()
 	json:
 	{
-		"argsCount":
-		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
 		"id":
 		{
 			"type": "integer",
@@ -455,35 +440,70 @@ addProblem()
 			}
 		}
 	}
-	
-assignItem()
-не надо
-	json:
+
+// ПОСЛЕДНИЕ НАЗНАЧЕНИЯ
+getAssignments()
+	IN json:
 	{
-		"type": "object",
-		"properties":
-		{	
-			///////////
-			we don't need ID here, cuz it's autoinc
-			//////////
-			
+		"user_id":
+		{
+			"type": "integer",
+			"description": "ID of the user, whose assignments you need"
+		},
+		"since":
+		{
+			"type": "integer".
+			"description": "timestamp as a left border of a time span"
+		}
+		"until":
+		{
+			"type": "integer",
+			"description": "timestamp as a right border of a time span"
+		}
+		
+	}
+	OUT json:
+	{
+		"success":
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		}
+		"data":
+		{
+			// is amount of returned objects essential here?
+			"id":
+			{
+				"type": "integer",
+				"description": "ID of a record in table assignments"
+			},
 			"user_id":
 			{
 				"type": "integer",
-				"description": "VK user ID"
+				"description": "ID of a user in current assignment"
 			},
 			"problem_id":
 			{
 				"type": "integer",
-				"description": "problem ID (FK problem)"
-			},
+				"description": "ID of a problem in current assignment"
+			}
 			"assigned":
 			{
 				"type": "integer",
-				"description": " 'timestamp' in database is a 4-byte integer equal to number of seconds since 01.01.1970"
+				"description": "contains a timestamp of current assignment"
 			}
-		}
+		}		
 	}
-	
 
 	
