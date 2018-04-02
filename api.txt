@@ -8,7 +8,6 @@
 		2 аргумент (необязательный):
 			значение по умолчанию (0) - при использовании в сервисах без учета пользователя
 			число - id ВКонтакте (или в телеге какой-нибудь)
-		если есть второй аргумент,
 			
 	запросить решение
 		1 аргумент (обязательный):
@@ -40,26 +39,23 @@
 	добавить категорию? (problemType)
 	
 	добавить задание (конкретное, problem)
-	
+
+// ЗАПРОС ЗАДАНИЯ
 getProblem()
 	IN json:
 	{
-		/////////////////// don't need that one ////////////////
-		"argsCount":
+		"type":
 		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
-		///////////////////////////////////////////////////////
-		"task_id":
-		{
-			"type": "integer",
-			"description": "if type is default (0), gets random problem; if type is an integer in range [1, 27], gets a problem by its number in exam variant; if type is a string, gets a problem by its category"
+			"type": "string",
+			"description": "if type is default (0), gets random problem; 
+					if type is an integer in range [1, 27], gets a problem by its number in exam variant; 
+					if type is a string, gets a problem by its category"
 		},
 		"user_id":
 		{
 			"type": "integer",
-			"description": "contains ID of the user, who requested a task (VK, Telegram...); otherwise empty (NULL)" 
+			"description": "contains ID of the user, who requested a task (VK, Telegram...);
+					otherwise default (0)" 
 		},
 		"API version":
 		{
@@ -108,17 +104,11 @@ getProblem()
 			}
 		}
 	}
-	
+
+// ЗАПРОС РЕШЕНИЯ
 getSolution()
 	IN json:
 	{
-		/////////////////// don't need that one ////////////////
-		"argsCount":
-		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
-		////////////////////////////////////////////////////////////
 		"problem_id":
 		{
 			"type": "integer",
@@ -127,7 +117,8 @@ getSolution()
 		"user_id":
 		{
 			"type": "integer",
-			"description": "contains ID of the user, who requested a solution (VK, Telegram...); otherwise default (0);" 
+			"description": "contains ID of the user, who requested a solution (VK, Telegram...);
+					otherwise default (0);" 
 		}
 		"API version":
 		{
@@ -176,16 +167,10 @@ getSolution()
 		}
 	}
 
+// ЗАПРОС ОТВЕТА
 getAnswer()
 	IN json:
 	{
-		/////////////////// don't need that one ////////////////
-		"argsCount":
-		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
-		//////////////////////////////////////////////////////////
 		"problem_id":
 		{
 			"type": "integer",
@@ -194,7 +179,8 @@ getAnswer()
 		"user_id":
 		{
 			"type": "integer",
-			"description": "contains ID of the user, who requested an answer (VK, Telegram...); otherwise default (0);" 
+			"description": "contains ID of the user, who requested an answer (VK, Telegram...);
+					otherwise default (0);" 
 		}
 		"API version":
 		{
@@ -242,17 +228,11 @@ getAnswer()
 			}
 		}
 	}
-	
+
+// ПРОВЕРКА ОТВЕТА
 checkAnswer()
 	IN json:
 	{
-		/////////////////// don't need that one ////////////////
-		"argsCount":
-		{
-			"type": "integer",
-			"description": "number of arguments used when calling a method"
-		},
-		//////////////////////////////////////////////////////
 		"problem_id":
 		{
 			"type": "integer",
@@ -261,12 +241,13 @@ checkAnswer()
 		"answer":
 		{
 			"type": "integer",
-			"description": "user's answer
+			"description": "user's answer"
 		}
 		"user_id":
 		{
 			"type": "integer",
-			"description": "contains ID of the user, who requested a checkup (VK, Telegram...); otherwise default (0);" 
+			"description": "contains ID of the user, who requested a checkup (VK, Telegram...);
+					otherwise default (0);" 
 		}
 		"API version":
 		{
