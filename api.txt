@@ -32,8 +32,13 @@
 			значение по умолчанию (0) - при использовании в сервисах без учета пользователя
 			число - id ВКонтакте (или в телеге какой-нибудь)
 			
-	запросить справку и категории
+	установить удобный вид ресурсов
+		1 аргумент (обязательный):
+			id пользователя
+		2 аргумент (обязательный):
+			вид ресурса
 	
+	запросить справку и категории
 
 // ЗАПРОС ЗАДАНИЯ
 getProblem()
@@ -79,24 +84,16 @@ getProblem()
 		},
 		"data":
 		{
-			"statement":
+			"itemsCount":
 			{
-				"type": "string",
-				"description": "contains text or image link"
+				"type": "integer",
+				"description": "contains amount of returned resource items"
 			}
-			
-			///////////////// ИЛИ ////////////////////
-			
-			"text":
+			"item":
 			{
 				"type": "string",
-				"description": "contains text of a statement"
-			},
-			"link":
-			{
-				"type": "string",
-				"description": "contains link to the image"
-			}
+				"description": "contains one resource item (image, link, text, etc)
+			}			
 		}
 	}
 
@@ -141,23 +138,15 @@ getSolution()
 		},
 		"data":
 		{
-			"solution":
+			"itemsCount":
 			{
-				"type": "string",
-				"description": "contains text or image link"
+				"type": "integer",
+				"description": "contains amount of returned resource items"
 			}
-			
-			///////////////// ИЛИ ////////////////////
-			
-			"text":
+			"item":
 			{
 				"type": "string",
-				"description": "contains text of a solution"
-			},
-			"link":
-			{
-				"type": "string",
-				"description": "contains link to the image"
+				"description": "contains one resource item (image, link, text, etc)
 			}
 		}
 	}
@@ -203,23 +192,15 @@ getAnswer()
 		},
 		"data":
 		{
-			"answer":
+			"itemsCount":
 			{
-				"type": "string",
-				"description": "contains text or image link"
+				"type": "integer",
+				"description": "contains amount of returned resource items"
 			}
-			
-			///////////////// ИЛИ ////////////////////
-			
-			"text":
+			"item":
 			{
 				"type": "string",
-				"description": "contains text of an answer"
-			},
-			"link":
-			{
-				"type": "string",
-				"description": "contains link to the image"
+				"description": "contains one resource item (image, link, text, etc)
 			}
 		}
 	}
@@ -320,6 +301,11 @@ getAssignments()
 		"data":
 		{
 			// is amount of returned objects essential here?
+			"assignmentsCount":
+			{
+				"type": "integer",
+				"description": "contains amount of returned resource items"
+			}
 			"id":
 			{
 				"type": "integer",
@@ -343,4 +329,36 @@ getAssignments()
 		}		
 	}
 
-	
+setPreferredResource()
+	IN json:
+	{
+		"user_id":
+		{
+			"type": "integer",
+			"description": "ID of the user, whose assignments you need"
+		},
+		"resource_type_name":
+		{
+			"type": "string",
+			"description": "name of preferred resource type (text, link, image etc.)"
+		}
+	}
+	OUT json:
+	{
+		"success":
+			{
+				"type": "boolean",
+				"description": "true if method worked without errors; otherwise false"
+			},
+		"error":
+		{
+			"code":
+			{
+				"type": "integer"
+			},
+			"message":
+			{
+				"type": "string"
+			}
+		}
+	}
