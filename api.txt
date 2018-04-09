@@ -192,16 +192,8 @@ getAnswer()
 		},
 		"data":
 		{
-			"itemsCount":
-			{
-				"type": "integer",
-				"description": "contains amount of returned resource items"
-			}
-			"item":
-			{
-				"type": "string",
-				"description": "contains one resource item (image, link, text, etc)
-			}
+                	"type": "string",
+		    	"description": "correct answer"
 		}
 	}
 
@@ -346,10 +338,10 @@ setPreferredResource()
 	OUT json:
 	{
 		"success":
-			{
-				"type": "boolean",
-				"description": "true if method worked without errors; otherwise false"
-			},
+		{
+			"type": "boolean",
+			"description": "true if method worked without errors; otherwise false"
+		},
 		"error":
 		{
 			"code":
