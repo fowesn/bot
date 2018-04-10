@@ -83,18 +83,10 @@ getProblem()
 			}
 		},
 		"data":
-		{
-			"itemsCount":
-			{
-				"type": "integer",
-				"description": "contains amount of returned resource items"
-			}
-			"item":
-			{
-				"type": "string",
-				"description": "contains one resource item (image, link, text, etc)
-			}			
-		}
+		[
+			"type": "array",
+			"description": "contains resource items (images, links, texts, etc)			
+		]
 	}
 
 // ЗАПРОС РЕШЕНИЯ
@@ -137,18 +129,10 @@ getSolution()
 			}
 		},
 		"data":
-		{
-			"itemsCount":
-			{
-				"type": "integer",
-				"description": "contains amount of returned resource items"
-			}
-			"item":
-			{
-				"type": "string",
-				"description": "contains one resource item (image, link, text, etc)
-			}
-		}
+		[
+			"type": "array",
+			"description": "contains resource items (images, links, texts, etc)			
+		]
 	}
 
 // ЗАПРОС ОТВЕТА
@@ -190,7 +174,7 @@ getAnswer()
 				"type": "string"
 			}
 		},
-		"data":
+		"answer":
 		{
                 	"type": "string",
 		    	"description": "correct answer"
@@ -241,13 +225,10 @@ checkAnswer()
 				"type": "string"
 			}
 		},
-		"data":
+		"result":
 		{
-			"result":
-			{
-				"type": "boolean",
-				"description": "contains true if the right answer was given, otherwise false"
-			}
+			"type": "boolean",
+			"description": "contains true if the right answer was given, otherwise false"
 		}
 	}
 	
@@ -291,13 +272,14 @@ getAssignments()
 			}
 		}
 		"data":
-		{
+		[
 			// is amount of returned objects essential here?
 			"assignmentsCount":
 			{
 				"type": "integer",
 				"description": "contains amount of returned resource items"
-			}
+			},
+			////////////
 			"id":
 			{
 				"type": "integer",
@@ -318,7 +300,7 @@ getAssignments()
 				"type": "integer",
 				"description": "contains a timestamp of current assignment"
 			}
-		}		
+		]		
 	}
 
 setPreferredResource()
