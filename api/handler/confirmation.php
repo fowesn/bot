@@ -7,7 +7,7 @@
  */
 include_once "iHandler.php";
 
-class confirmation implements iHandler {
+class confirmation {
 
 	public static function run($data) {
 		echo CONFIRMATION_TOKEN;

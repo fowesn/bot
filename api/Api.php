@@ -24,9 +24,12 @@ class Api {
 	 * code содержит код ответа вк
 	 */
 	static public function messageSend($request_params) {
-		if (!isset($request_params['user_id'])) {
+	    if (!isset($request_params['user_id'])) {
 			throw new \Exception("Не указан user_id");
 		}
+        if (!isset($request_params['message'])) {
+            throw new \Exception("Не указан message");
+        }
 		//в случае если api version и access_token не установлены
 		$request_params = self::setVersionAndToken($request_params);
 
@@ -34,7 +37,7 @@ class Api {
 		$get_params = http_build_query($request_params);
 		$result = json_decode(file_get_contents('https://api.vk.com/method/messages.send?' . $get_params));
 		//обрабатываем ошибки
-		if (!isset($result->error))
+        if (!isset($result->error))
 			return;
 		else
 			throw new RequestError($result->error->error_msg, $result->error->error_code);
