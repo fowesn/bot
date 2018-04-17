@@ -9,15 +9,15 @@
 class Task
 {
     public static function getRandomTaskMessage($userId) {
-        $message ="";
+        $message = "функция getRandomTaskMessage, пользователь " . $userId;
         return array("user_id" => $userId, "message" => $message);
     }
     public static function getThemeTaskMessage($userId, $theme) {
-        $message ="";
+        $message = "функция getThemeTaskMessage, пользователь " . $userId . ", тема " . $theme;
         return array("user_id" => $userId, "message" => $message);
     }
     public static function getKIMTaskMessage($userId, $KIMid) {
-        $message ="";
+        $message = "функция getKIMTaskMessage, пользователь " . $userId . ", номер в киме " . $KIMid;
         return array("user_id" => $userId, "message" => $message);
     }
 }

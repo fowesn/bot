@@ -8,19 +8,19 @@
 
 class OtherRequests
 {
-    public static function getThemesList($userId) {
-        $message ="";
-        return array("user_id" => $userId, "message" => $message);
+    public static function getThemesList() {
+        $message = "темы темы темы";
+        return $message;
     }
-    public static function getResourceTypesList($userId) {
-        $message ="";
-        return array("user_id" => $userId, "message" => $message);
+    public static function getResourceTypesList() {
+        $message = "ресурсы ресурсы ресурсы";
+        return $message;
     }
     public static function setUserPreferredResource($userId, $preferredResource) {
-        $message ="";
+        $message = "функция setUsePreferredResource, пользователь " . $userId . " ресурс " . $preferredResource;
         return array("user_id" => $userId, "message" => $message);
     }
-    public static function getHelpMessage($userId) {
+    public static function getHelpMessage() {
         $message = "Вот список команд, которые ты можешь использовать:
                     \"случайное задание\" - я пришлю текст случайного задания из банка заданий
                     \"задание <название темы>\" - я пришлю текст задания на определенную тематику. Например,\"задание робот\"
@@ -30,10 +30,10 @@ class OtherRequests
                     \"разбор <номер задания>\" - я пришлю текст решения задания под указанным тобой номером. Например, \"разбор 12345\"
                     \"ресурсы\" - я пришлю тебе список доступных ресурсов
                     \"ресурс <название ресурса>\" - я запомню тот ресурс, который тебе нравится (помни, что не все задания доступны в одном ресурсе; если задания недоступны в том виде, который тебе нравится, я пришлю тебе в виде текста или изображения, если задание не может быть отображено только текстом)";
-        return array("user_id" => $userId, "message" => $message);
+        return $message;
     }
-    public static function getBasicMessage($userId) {
+    public static function getBasicMessage() {
         $message = "Я не понимаю, что ты от меня хочешь. Напиши \"помощь\", чтобы узнать, что я умею";
-        return array("user_id" => $userId, "message" => $message);
+        return $message;
     }
 }
