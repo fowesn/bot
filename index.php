@@ -58,7 +58,7 @@ $data = json_decode(file_get_contents('php://input'));
 
 
 try {
-	CallbackApi::run($data);
+	CallbackApi::requestHandler($data);
 	echo "ok";
 } catch (\api\SecurityBreach $err) {
 	echo $err->getMessage();

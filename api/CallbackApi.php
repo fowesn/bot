@@ -30,7 +30,7 @@ class CallbackApi {
 	 * @throws SecurityBreach в случае аттаки
 	 * @throws \Exception когда данные не корректны
 	 */
-	public static function run($data) {
+	public static function requestHandler($data) {
 		//echo "test";
 		//echo var_dump($data);
 		if (!isset($data->type))

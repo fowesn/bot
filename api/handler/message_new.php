@@ -26,6 +26,7 @@ class message_new
         //удаление из массива кавычек, угловых скобок, точек, запятых, если пользователь случайно их поставил
         //$search = array('\"', '<', '>', ',', '.');
         $user_message = str_replace("\"", "", $user_message);
+        $user_message = str_replace("\'", "", $user_message);
         $user_message = str_replace("<", "", $user_message);
         $user_message = str_replace(">", "", $user_message);
         $user_message = str_replace(",", "", $user_message);
