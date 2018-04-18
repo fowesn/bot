@@ -52,9 +52,9 @@ spl_autoload_register
 
 
 /////////////////////////////////////////////////
-//$data = json_decode(file_get_contents('php://input'));
+$data = json_decode(file_get_contents('php://input'));
 //не норма
-$data = json_decode($_GET['data']);
+//$data = json_decode($_GET['data']);
 
 
 try {

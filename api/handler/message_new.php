@@ -32,9 +32,12 @@ class message_new
                 if(count($user_message) > 1)
                     \api\Api::messageSend(array("user_id" => $data->object->user_id,
                                                 "message" => \UnidentifiedPartialRequests::help()));
-                else
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \OtherRequests::GetHelpMessage()));
+                else {
+                    $message = \OtherRequests::GetHelpMessage();
+                    for($i = 0; $i < count($message); $i++)
+                        \api\Api::messageSend(array("user_id" => $data->object->user_id,
+                                                    "message" => $message[$i]));
+                }
                 break;
             case 'темы':
                 if(count($user_message) > 1)
@@ -55,6 +58,7 @@ class message_new
                         \api\Api::messageSend(\Task::getThemeTaskMessage($data->object->user_id, $user_message[1]));
                 }
                 else \api\Api::messageSend(\Task::getRandomTaskMessage($data->object->user_id));
+                break;
             case 'разбор':
                 if(count($user_message) != 2)
                     \api\Api::messageSend(array("user_id" => $data->object->user_id,
@@ -65,7 +69,7 @@ class message_new
             case 'ресурсы':
                 if(count($user_message) > 1)
                     \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::resource()));
+                                                "message" => \UnidentifiedPartialRequests::resources()));
                 else
                     \api\Api::messageSend(array("user_id" => $data->object->user_id,
                                                 "message" => \OtherRequests::getResourceTypesList()));
