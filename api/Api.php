@@ -44,6 +44,56 @@ class Api {
 
 	}
 
+    /**
+     * @param
+     * @throws \Exception
+     */
+    static public function pictureAttachmentMessageSend($user_id) {
+
+        $group_id = "123539368";
+	    $album_id = "233003078";
+        $image_path = dirname(__FILE__) . '/img.jpg';
+
+        self::messageSend(array("user_id" => $user_id, "message" => "пока что всё ок"));
+
+        $group_request_params = array("group_id" => $group_id, "album_id" => $album_id);
+        $group_request_params = self::setVersionAndToken($group_request_params);
+        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.getUploadServer?' . http_build_query($group_request_params)));
+        if(isset($result->error))
+            //throw new RequestError($result->error->error_msg, $result->error->error_code);
+            self::messageSend(array("user_id" => $user_id, "message" => "err" . $result->error->error_msg . "  " . $result->error->error_code));
+
+        self::messageSend(array("user_id" => $user_id, "message" => "до сих пор ок"));
+        $server = $result->response->upload_url;
+        $postparam = array("file1" => "@" . $image_path);
+        //Отправляем файл на сервер
+        $ch = curl_init($server);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,$postparam);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; charset=UTF-8'));
+        $photo_server_json = json_decode(curl_exec($ch));
+        curl_close($ch);
+        if(isset($photo_server_json->error))
+            self::messageSend(array("user_id" => $user_id, "message" => "err"));
+        self::messageSend(array("user_id" => $user_id, "message" => "почему тогда его нет в альбоме?"));
+        $photo_save = array(
+            "server" => $photo_server_json->server,
+            "photos_list" => $photo_server_json->photos_list,
+            "album_id" => $album_id,
+            "hash" => $photo_server_json->hash,
+            'gid' => $group_id);
+        $photo_save = self::setVersionAndToken($photo_save);
+        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.save?' . http_build_query($photo_save)));
+        if (!isset($result->error))
+            return;
+        else {
+            self::messageSend(array("user_id" => $user_id, "message" => "err"));
+        }
+        self::messageSend(array("user_id" => $user_id, "message" => "тут явно чето не так"));
+            //throw new RequestError($result->error->error_msg, $result->error->error_code);
+
+    }
 
 	/**
 	 *  Метод является оберткой метода getHistory, в коем не участвует
