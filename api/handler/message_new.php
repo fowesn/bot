@@ -23,6 +23,13 @@ class message_new
         $user_message = $data->object->body;
         //приведение к нижнему регистру
         $user_message = mb_strtolower($user_message, 'UTF-8');
+        //удаление из массива кавычек, угловых скобок, точек, запятых, если пользователь случайно их поставил
+        //$search = array('\"', '<', '>', ',', '.');
+        $user_message = str_replace("\"", "", $user_message);
+        $user_message = str_replace("<", "", $user_message);
+        $user_message = str_replace(">", "", $user_message);
+        $user_message = str_replace(",", "", $user_message);
+        $user_message = str_replace(".", "", $user_message);
         //разделение сообщения пользователя на массив слов
         $user_message = explode(' ', $user_message);
 
@@ -100,4 +107,3 @@ class message_new
         }
     }
 }
-    
