@@ -51,7 +51,7 @@ class Api {
     static public function pictureAttachmentMessageSend($user_id) {
 
         $group_id = "123539368";
-        $album_id = "233003078";
+        $album_id = "253228018";
         $image_path = dirname(__FILE__) . '/img.jpg';
 
         self::messageSend(array("user_id" => $user_id, "message" => "пока что всё ок"));
@@ -92,7 +92,7 @@ class Api {
         }
         self::messageSend(array("user_id" => $user_id, "message" => "тут явно чето не так"));
         //throw new RequestError($result->error->error_msg, $result->error->error_code);
-
+        return;
     }
 	/**
 	 *  Метод является оберткой метода getHistory, в коем не участвует

@@ -9,7 +9,10 @@
 class Answer
 {
     public static function getAnswer($userId, $taskId) {
-        $message = "функция getAnswer, пользователь " . $userId . ", номер задания " . $taskId;
+        if (!preg_match("/^\d+$/", $taskId))
+            $message = "Неверный номер задания. Проверь, нет ли там ошибки";
+        else
+            $message = "функция getAnswer, пользователь " . $userId . ", номер задания " . $taskId;
         return array("user_id" => $userId, "message" => $message);
     }
     public static function getAnalysis($userId, $taskId) {

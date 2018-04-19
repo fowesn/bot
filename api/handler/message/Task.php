@@ -17,7 +17,10 @@ class Task
         return array("user_id" => $userId, "message" => $message);
     }
     public static function getKIMTaskMessage($userId, $KIMid) {
-        $message = "функция getKIMTaskMessage, пользователь " . $userId . ", номер в киме " . $KIMid;
+        if($KIMid > 23 || $KIMid < 1)
+            $message = "Похоже, что номер задания указан неверно. Учти, что я могу дать тебе только задания с номерами от 1 до 23";
+        else
+            $message = "функция getKIMTaskMessage, пользователь " . $userId . ", номер в киме " . $KIMid;
         return array("user_id" => $userId, "message" => $message);
     }
 }
