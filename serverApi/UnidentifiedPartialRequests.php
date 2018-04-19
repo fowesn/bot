@@ -5,7 +5,7 @@
  * Date: 16.04.2018
  * Time: 23:36
  */
-
+namespace serverApi;
 class UnidentifiedPartialRequests
 {
     public static function help()

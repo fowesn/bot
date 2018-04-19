@@ -13,7 +13,7 @@ class ErrorRequest implements iRequest {
 	private $request_params;
 
 	public function __construct($user_id) {
-		$userInfo = json_decode(file_get_contents("https://api.vk.com/method/users.get?user_ids={$user_id}&v=" . VERSION_VK_API));
+		$userInfo = json_decode(file_get_contents("https://vkApi.vk.com/method/users.get?user_ids={$user_id}&v=" . VERSION_VK_API));
 
 		//и извлекаем из ответа его имя
 		$user_name = $userInfo->response[0]->first_name;

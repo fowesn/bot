@@ -5,7 +5,7 @@
  * Date: 13.04.2018
  * Time: 14:39
  */
-
+namespace serverApi;
 class Answer
 {
     public static function getAnswer($userId, $taskId) {

@@ -4,7 +4,7 @@ namespace project;
 //Как я понял, это проверка на то,что скрипт не запушен через shell, ну хотя кто его знает
 //вторая догадка, возможно не существует массива $_GET если перейти по ссылки на страницу без параметров
 
-use api\CallbackApi;
+use vkApi\CallbackApi;
 
 if (!isset($_REQUEST)) {
     return;
@@ -52,19 +52,19 @@ spl_autoload_register
 
 
 /////////////////////////////////////////////////
-$data = json_decode(file_get_contents('php://input'));
+//$data = json_decode(file_get_contents('php://input'));
 //не норма
-//$data = json_decode($_GET['data']);
+$data = json_decode($_GET['data']);
 
 
 try {
 	CallbackApi::requestHandler($data);
 	echo "ok";
-} catch (\api\SecurityBreach $err) {
+} catch (\vkApi\SecurityBreach $err) {
 	echo $err->getMessage();
 	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
 
-} catch (\api\EventNotSupported $err) {
+} catch (\vkApi\EventNotSupported $err) {
 	echo $err->getMessage();
 	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
 

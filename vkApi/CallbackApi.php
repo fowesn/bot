@@ -6,14 +6,15 @@
  * Time: 14:13
  */
 
-namespace api;
+namespace vkApi;
 
-include_once "handler/message_new.php";
+
+//include_once "handler/message_new.php";
 include_once "handler/confirmation.php";
 
 /**
  * Class CallbackApi Реализует распределение запросов событий по модулям обработки.
- * @package api
+ * @package vkApi
  * @author kurenchuksergey
  * @version 0.1
  */
@@ -39,10 +40,10 @@ class CallbackApi {
 			throw new SecurityBreach("Ключ не соответствует");
 
 
-		if (class_exists($data->type, false)) {
-			return call_user_func($data->type . "::run", $data);
+		if (class_exists('\\vkApi\\handler\\'.$data->type, true)) {
+			return call_user_func('\\vkApi\\handler\\'.$data->type . "::run", $data);
 		} else
-			throw new EventNotSupported("Метода " . $data->type . " нет в " . __NAMESPACE__ . "\handler\\" . $data->type);
+			throw new EventNotSupported("Метода " . $data->type . " нет в " . __NAMESPACE__ . "\\handler\\" . $data->type);
 
 
 	}
@@ -52,7 +53,7 @@ class CallbackApi {
 
 /**
  * Class SecurityBreach возникает в случае неверного ключа
- * @package api
+ * @package vkApi
  */
 class SecurityBreach extends \Exception {
 	public function __construct($message, $code = 0, \Exception $previous = null) {
@@ -62,7 +63,7 @@ class SecurityBreach extends \Exception {
 
 /**
  * Class EventNotSupported возникает в случае отсутсвие обработчика события
- * @package api
+ * @package vkApi
  */
 class EventNotSupported extends \Exception {
 	public function __construct($message, $code = 0, \Exception $previous = null) {

@@ -6,10 +6,10 @@
  * Time: 23:29
  * @version 0.1
  * @author kurenchuksergey
- * @package api
+ * @package vkApi
  */
 
-namespace api;
+namespace vkApi;
 class Api {
 
 	/**
@@ -30,7 +30,7 @@ class Api {
         if (!isset($request_params['message'])) {
             throw new \Exception("Не указан message");
         }
-		//в случае если api version и access_token не установлены
+		//в случае если vkApi version и access_token не установлены
 		$request_params = self::setVersionAndToken($request_params);
 
 		//отправляем
@@ -69,7 +69,7 @@ class Api {
 
 		if (isset($request_params['start_message_id']))
 			$request_params['start_message_id'] = -1;
-		//в случае если api version и access_token не установлены
+		//в случае если vkApi version и access_token не установлены
 		$request_params = self::setVersionAndToken($request_params);
 
 		//отправляем
@@ -103,7 +103,7 @@ class Api {
 		$request_params = self::setVersionAndToken($request_params);
 		//отправляем
 		$get_params = http_build_query($request_params);
-		$result = json_decode(file_get_contents('https://api.vk.com/method/users.get?' . $get_params));
+		$result = json_decode(file_get_contents('https://vkApi.vk.com/method/users.get?' . $get_params));
 		if (!isset($result->error))
 			return $result;
 		else
@@ -130,7 +130,7 @@ class Api {
 
 
 /*
- * Класс исключения для работы с вк api
+ * Класс исключения для работы с вк vkApi
  * обработка кодов возврата в случае неудачи
  */
 

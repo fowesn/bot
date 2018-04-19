@@ -27,7 +27,7 @@ class Test implements iRequest {
 
 
 		$peer_id = $data->object->user_id;
-		$serverUploadInfo = json_decode(file_get_contents("https://api.vk.com/method/photos.getMessagesUploadServer?peer_id=" . $peer_id .
+		$serverUploadInfo = json_decode(file_get_contents("https://vkApi.vk.com/method/photos.getMessagesUploadServer?peer_id=" . $peer_id .
 			"&access_token=" . COMMUNITY_TOKEN));
 
 		echo var_dump($serverUploadInfo);
@@ -70,7 +70,7 @@ class Test implements iRequest {
 		$photo = $out->photo;
 
 		echo "----------------------------\n<br><br>";
-		$uploadPhoto = json_decode(file_get_contents("https://api.vk.com/method/photos.saveMessagesPhoto?access_token=" . COMMUNITY_TOKEN .
+		$uploadPhoto = json_decode(file_get_contents("https://vkApi.vk.com/method/photos.saveMessagesPhoto?access_token=" . COMMUNITY_TOKEN .
 			"&photo=${photo}&server=$server&hash=$hash"));
 
 		echo var_dump($uploadPhoto);
