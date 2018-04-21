@@ -6,8 +6,9 @@
  * Time: 6:26
  */
 
-class dbResult extends dbConnection
+class dbResult
 {
+    // для прототипа работает :)
     public static function getAnswer ($problem_id)
     {
         $conn = dbConnection::getConnection();
@@ -17,9 +18,14 @@ class dbResult extends dbConnection
         return $correct_answer['problem_answer'];
     }
 
+    // для прототипа работает :)
     public static function getSolution ($user_id, $problem_id)
     {
         $conn = dbConnection::getConnection();
+        $stmt = $conn->prepare('SELECT problem_solution FROM problem WHERE problem_id = ?');
+        $stmt->execute(array($problem_id));
+        $resource_collection_id = $stmt->fetch()['problem_solution'];
+        return dbResource::getPreferredResource($user_id, $resource_collection_id);
 
     }
 }
