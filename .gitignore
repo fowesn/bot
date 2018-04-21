@@ -3,3 +3,4 @@
 setting.php
 */config
 */vendor
+*/classes/db/dbSettings.php
