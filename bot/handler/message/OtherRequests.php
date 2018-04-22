@@ -10,14 +10,17 @@ class OtherRequests
 {
     public static function getThemesList() {
         $message = "темы темы темы";
+        // get запрос /api/v1/problems/problem_types/problem_type
         return $message;
     }
     public static function getResourceTypesList() {
         $message = "ресурсы ресурсы ресурсы";
+        // get запрос /api/v1/resources/resource
         return $message;
     }
     public static function setUserPreferredResource($userId, $preferredResource) {
         $message = "функция setUsePreferredResource, пользователь " . $userId . " ресурс " . $preferredResource;
+        // put запрос api/v1/resources/resource
         return array("user_id" => $userId, "message" => $message);
     }
     public static function getHelpMessage() {

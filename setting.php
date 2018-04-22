@@ -19,17 +19,6 @@ define("COMMUNITY_TOKEN", "18e7de3bb73e2468eaab4b49847e2fd396f1b09ec49435a03c4bf
 define("SECRET_KEY", "kappa_tryout_key");
 // версия vk api
 define("VERSION_VK_API", "5.71");
-
-
-/*
- * Константы для работы с DB
- */
-// адрес сервера
-define("DBADDRESS", "localhost");
-// логин пользователя
-define("DBLOGIN", "root");
-// пароль пользователя
-define("DBPASS", "");
-// название базы данных
-define("DBNAME", "bot");
+// адрес сервера с api и бд
+define("HOST_API", "http://kappa.cs.karelia.ru/~nestulov");
 
