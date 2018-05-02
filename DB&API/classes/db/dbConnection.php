@@ -8,15 +8,8 @@
 
 class dbConnection
 {
+    private static $conn;
     private function __construct()
-    {
-    }
-
-    /**
-     * This function creates a database connection
-     * @return object containing database connection
-     */
-    public static function getConnection()
     {
         /** @var string hostname */
         $host = DB_HOST;
@@ -38,12 +31,26 @@ class dbConnection
             // Create a new PDO connection
             $connection = new PDO($dsn, $user, $pass, $options);
             // Return the connection
-            return $connection;
+            self::$conn = $connection;
         }
         catch (PDOException $e)
         {
-            echo($e->getCode() . " " . $e->getMessage());
+            //echo($e->getCode() . " " . $e->getMessage());
+            throw $e;
         }
+    }
+
+    /**
+     * Create connection if it does not exist
+     * @return object containing database connection
+     */
+    public static function getConnection()
+    {
+        if (self::$conn === null)
+        {
+            new dbConnection();
+        }
+        return self::$conn;
     }
 }
 

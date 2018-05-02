@@ -7,6 +7,36 @@ require '../config/config.php';
 
 $app = new \Slim\App();
 
+$container = $app->getContainer();
+
+// логгер
+$container['logger'] = function ($c)
+{
+    $logger = new \Monolog\Logger('APIlogger');
+    $file_handler = new \Monolog\Handler\StreamHandler('../logs/app.log');
+    $logger->pushHandler($file_handler);
+    return $logger;
+};
+
+// обработка ошибок
+$container['errorHandler'] = function ($c)
+{
+    return function ($request, $response, $exception) use ($c) {
+        // если ошибка произошла по вине пользователя
+        if ($exception instanceof UserExceptions)
+        {
+            return $c['response']->withJson(array ('success' => 'false',
+                'error' => ["code" => $exception->getCode(),
+                    "message" => $exception->getMessage()]), 200, JSON_UNESCAPED_UNICODE);
+        }
+        // иначе, системная ошибка
+        $c->logger->addInfo($exception->getMessage());
+        return $c['response']->withStatus($exception->getCode())
+            ->withHeader('Content-Type', 'text/html')
+            ->write('Something went wrong!');
+    };
+};
+
 // Виталик
 $app->get('/api/v1/problems/problem', function (Request $request, Response $response) {
 

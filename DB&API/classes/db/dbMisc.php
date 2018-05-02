@@ -8,6 +8,9 @@
 
 class dbMisc
 {
+    /**
+     * @return array Contains category names available
+     */
     public static function getProblemTypes()
     {
         $conn = dbConnection::getConnection();
@@ -20,18 +23,29 @@ class dbMisc
         return $resources;
     }
 
-    public static function getGlobalUserId ($user_id, $platform)
+    /**
+     * @param $user_id Id of a user in service used
+     * @param $service Source of request that uses API (VK/tg/...)
+     * @return mixed Global id of the user
+     * @throws Exception System errors
+     */
+    public static function getGlobalUserId ($user_id, $service)
     {
         $conn = dbConnection::getConnection();
-        $columns = array('vk' => 'user_vk_id');
+        $columns = array('vk' => 'user_vk_id', 'tg' => 'user_tg_id');
 
-        // Check whether the stated service exists
-        if (!isset($columns[$platform]))
+        if ($user_id === null)
         {
-            /** @throws  ?Exception  Column that represents the service does not exist */
+            throw new Exception("Invalid parameter: user_id is NULL", 500);
         }
 
-        $query = 'SELECT user_id FROM user WHERE ' . $columns[$platform] . ' = ?';
+        // Check whether the stated service exists
+        if (!isset($columns[$service]))
+        {
+            throw new Exception("Platform " . $service . " is not supported",404);
+        }
+
+        $query = 'SELECT user_id FROM user WHERE ' . $columns[$service] . ' = ?';
         $stmt = $conn->prepare($query);
         $stmt->execute(array($user_id));
 
@@ -39,11 +53,11 @@ class dbMisc
         // Otherwise return "global" user_id
         if (($global_user_id = $stmt->fetch()['user_id']) === null)
         {
-            $query = 'INSERT INTO user (user_created, preferred_resource_type, ' . $columns[$platform] . ') VALUES (NOW(), 1, ?)';
+            $query = 'INSERT INTO user (user_created, preferred_resource_type, ' . $columns[$service] . ') VALUES (NOW(), 1, ?)';
             $stmt = $conn->prepare($query);
             $stmt->execute(array($user_id));
             // Get an id of last inserted record
-            $global_user_id = $stmt->fetch()['user_id'];
+            $global_user_id = $conn->lastInsertId();
         }
 
         return $global_user_id;

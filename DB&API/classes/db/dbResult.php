@@ -8,41 +8,74 @@
 
 class dbResult
 {
-    public static function getAnswer ($problem_id)
+    /**
+     * @param $user_id Global id of the user who requested correct answer
+     * @param $problem_id Id of a problem which correct answer is requested
+     * @return mixed Correct answer
+     * @throws Exception System error
+     * @throws UserExceptions Depend on user's actions
+     */
+    public static function getAnswer ($user_id, $problem_id)
     {
         $conn = dbConnection::getConnection();
+
+        if ($user_id === null)
+        {
+            throw new Exception("Invalid parameter: user_id is NULL", 500);
+        }
+
+        if ($problem_id === null)
+        {
+            throw new Exception("Invalid parameter: problem_id is NULL", 500);
+        }
+
+        // User can't get correct answer of the task he wasn't assigned to
+        $stmt = $conn->prepare('SELECT assignment_id FROM assignment WHERE problem_id = ? AND user_id = ?');
+        $stmt->execute(array($problem_id, $user_id));
+        if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
+        {
+            throw new UserExceptions("Вы не получали задания, на которое просите правильный ответ!");
+        }
+
         $stmt = $conn->prepare('SELECT problem_answer FROM problem WHERE problem_id = ?');
         $stmt->execute(array($problem_id));
 
-        if (($correct_answer = $stmt->fetch()['problem_answer']) === null)
-        {
-            /** @throws  ?Exception  Specified problem_id does not exist */
-        }
-
-        return $correct_answer;
+        return $stmt->fetch()['problem_answer'];
     }
 
+    /**
+     * @param $user_id
+     * @param $problem_id
+     * @return array Contains solution stored in resources
+     * @throws Exception System error
+     * @throws UserExceptions Depend on user's actions
+     */
     public static function getSolution ($user_id, $problem_id)
     {
         $conn = dbConnection::getConnection();
 
-        // Check whether the stated user exists
-        $user_check = $conn->prepare('SELECT user_id FROM user WHERE user_id  = ?');
-        $user_check->execute(array($user_id));
-        if ($user_check->fetch() === null)
+        if ($user_id === null)
         {
-            /** @throws ?Exception  Specified user_id does not exist */
+            throw new Exception("Invalid parameter: user_id is NULL", 500);
+        }
+
+        if ($problem_id === null)
+        {
+            throw new Exception("Invalid parameter: problem_id is NULL", 500);
+        }
+
+        // User can't get solution of the task he wasn't assigned to
+        $stmt = $conn->prepare('SELECT assignment_id FROM assignment WHERE problem_id = ? AND user_id = ?');
+        $stmt->execute(array($problem_id, $user_id));
+        if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
+        {
+            throw new UserExceptions("Вы не получали задания, на которое просите разбор!");
         }
 
         $stmt = $conn->prepare('SELECT problem_solution FROM problem WHERE problem_id = ?');
         $stmt->execute(array($problem_id));
 
-        if (($resource_collection_id = $stmt->fetch()['problem_solution']) === null)
-        {
-            /** @throws ?Exception Specified problem_id does not exist */
-        }
-
-        return dbResource::getPreferredResource($user_id, $resource_collection_id);
+        return dbResource::getPreferredResource($user_id, $stmt->fetch()['problem_solution']);
 
     }
 }
