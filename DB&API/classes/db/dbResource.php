@@ -35,12 +35,12 @@ class dbResource
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL", 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($resource_collection_id === null)
         {
-            throw new Exception("Invalid parameter: resource_collection_id is NULL", 500);
+            throw new Exception("Invalid parameter: resource_collection_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('SELECT preferred_resource_type FROM user WHERE user_id = ?');
@@ -81,12 +81,12 @@ class dbResource
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL", 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($resource_type_code === null)
         {
-            throw new Exception("Invalid parameter: resource_type_code is NULL", 500);
+            throw new Exception("Invalid parameter: resource_type_code is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('SELECT resource_type_id FROM resource_type WHERE resource_type_code = ?');

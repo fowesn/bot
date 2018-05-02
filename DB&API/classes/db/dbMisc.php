@@ -36,7 +36,7 @@ class dbMisc
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL", 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated service exists

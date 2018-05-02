@@ -20,7 +20,7 @@ class dbProblem
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated user exists
@@ -28,7 +28,7 @@ class dbProblem
         $user_check->execute(array($user_id));
         if ($user_check->fetch()['user_id'] === null)
         {
-            throw new Exception("Invalid parameter: user_id not found in user; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id not found in user; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('SELECT problem.problem_id, problem.problem_statement FROM problem LEFT JOIN assignment 
@@ -64,12 +64,12 @@ class dbProblem
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($problem_type_code === null)
         {
-            throw new Exception("Invalid parameter: problem_type is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: problem_type is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated user exists
@@ -77,7 +77,7 @@ class dbProblem
         $user_check->execute(array($user_id));
         if ($user_check->fetch()['user_id'] === null)
         {
-            throw new Exception("Invalid parameter: user_id not found in user; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id not found in user; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated problem_type exists
@@ -122,12 +122,12 @@ class dbProblem
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($exam_item_number === null)
         {
-            throw new Exception("Invalid parameter: exam_item_number is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: exam_item_number is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated user exists
@@ -135,7 +135,7 @@ class dbProblem
         $user_check->execute(array($user_id));
         if ($user_check->fetch()['user_id'] === null)
         {
-            throw new Exception("Invalid parameter: user_id not found in user; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id not found in user; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated exam_item_number exists

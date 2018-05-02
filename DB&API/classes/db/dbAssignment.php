@@ -20,12 +20,12 @@ class dbAssignment
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($problem_id === null)
         {
-            throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated user exists
@@ -35,7 +35,7 @@ class dbAssignment
         if ($user_check->fetch()['user_id'] === null)
         {
             /** @throws ?Exception  Specified user_id does not exist */
-            throw new Exception("Invalid parameter: user_id; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated problem exists
@@ -45,7 +45,7 @@ class dbAssignment
         if ($problem_check->fetch()['problem_id'] === null)
         {
             /** @throws ?Exception  Specified problem_id does not exist */
-            throw new Exception("Invalid parameter: problem_id; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: problem_id; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('INSERT INTO  assignment (problem_id, user_id, assignment_last_answer, assigned, correct_answer_provided) VALUES (?, ?, NULL, NOW(), FALSE )');
@@ -57,7 +57,7 @@ class dbAssignment
      * @param $user_id Id of a user whose answer is saved
      * @param $problem_id Id of an assigned problem
      * @param $answer User's answer to save
-     * @return bool Indicates whether the method worked successful
+     * @return mixed Id of updated assignment
      * @throws Exception System errors
      * @throws UserExceptions Depend on user's actions
      */
@@ -67,17 +67,17 @@ class dbAssignment
 
         if ($user_id === null)
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($problem_id === null)
         {
-            throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($answer === null)
         {
-            throw new Exception("Invalid parameter: answer is NULL; Method: " . __METHOD__ . " ;line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: answer is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // User can't give an answer to the task he wasn't assigned to
@@ -88,8 +88,13 @@ class dbAssignment
             throw new UserExceptions("Вы не получали задания, на которое пытаетесь дать ответ!");
         }
 
+        // Saving last answer in assignment
+        $stmt = $conn->prepare('UPDATE assignment SET assignment_last_answer = ? WHERE assignment_id = ?');
+        $stmt->execute(array($answer, $assignment_id));
+
         $stmt = $conn->prepare('INSERT INTO answer (assignment_id, solution_answer, solution_provided) VALUES (?, ?, NOW())');
         $stmt->execute(array($assignment_id, $answer));
-        return true;
+
+        return $assignment_id;
     }
 }
