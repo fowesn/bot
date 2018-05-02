@@ -42,23 +42,43 @@ $app->get('/api/v1/problems/problem', function (Request $request, Response $resp
 $type = $request->getQueryParam('type', null);
 $user_id = $request->getQueryParam('user_id', null);
 $service = $request->getQueryParam('service', null);
-    
+$user_id = dbMisc::getGlobalUserId($user_id, $service);
+if (is_numeric($type)) {
+    $data = dbProblem::getProblemByNumber($user_id, $type);
+}
+elseif ($type === 'random') {
+    $data = dbProblem::getProblem($user_id);
+}
+else {
+    $data = dbProblem::getProblemByType($user_id, $type);
+}
+$answer = array ('success' => 'true','data' => $data);
+$response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+return $response;    
 });
 
 // Виталик
 $app->get('/api/v1/solutions/solution', function (Request $request, Response $response) {
 $problem_id = $request->getQueryParam('problem_id', null);
 $user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null);
-    
+$service = $request->getQueryParam('service', null); 
+$user_id = dbMisc::getGlobalUserId($user_id, $service);
+$data = dbResult::getSolution($user_id, $problem_id);
+$answer = array ('success' => 'true' , 'data' => $data);
+$response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+return $response;    
 });
 
 // Виталик
 $app->get('/api/v1/answers/answer', function (Request $request, Response $response) {
 $problem_id = $request->getQueryParam('problem_id', null);
 $user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null);
-    
+$service = $request->getQueryParam('service', null);  
+$user_id = dbMisc::getGlobalUserId($user_id, $service);
+$data = dbResult::getAnswer($user_id, $problem_id);
+$answer = array ('success' => 'true' , 'data' => $data);
+$response->getBody()->write($response->withJson($answer, 200, JSON_UNESCAPED_UNICODE));
+return $response;    
 });
 
 // Андрей
