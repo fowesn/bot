@@ -39,17 +39,26 @@ $container['errorHandler'] = function ($c)
 
 // Виталик
 $app->get('/api/v1/problems/problem', function (Request $request, Response $response) {
-
+$type = $request->getQueryParam('type', null);
+$user_id = $request->getQueryParam('user_id', null);
+$service = $request->getQueryParam('service', null);
+    
 });
 
 // Виталик
 $app->get('/api/v1/solutions/solution', function (Request $request, Response $response) {
-
+$problem_id = $request->getQueryParam('problem_id', null);
+$user_id = $request->getQueryParam('user_id', null);
+$service = $request->getQueryParam('service', null);
+    
 });
 
 // Виталик
 $app->get('/api/v1/answers/answer', function (Request $request, Response $response) {
-
+$problem_id = $request->getQueryParam('problem_id', null);
+$user_id = $request->getQueryParam('user_id', null);
+$service = $request->getQueryParam('service', null);
+    
 });
 
 // Андрей
