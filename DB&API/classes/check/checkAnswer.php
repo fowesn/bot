@@ -8,6 +8,12 @@
 
 class checkAnswer
 {
+    /**
+     * @param $assignment_id Id of an assignment, that may change
+     * @param $answer User's answer to check
+     * @return bool Indicates whether user's answer is correct
+     * @throws Exception System Error
+     */
     public static function checkB ($assignment_id, $answer)
     {
         $conn = dbConnection::getConnection();
