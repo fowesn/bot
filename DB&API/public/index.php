@@ -38,94 +38,124 @@ $container['errorHandler'] = function ($c)
 };
 
 // Виталик
-$app->get('/api/v1/problems/problem', function (Request $request, Response $response) {
-$type = $request->getQueryParam('type', null);
-$user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null);
-if ($type === null) {
-// ошибка
-}
-if ($user_id === null) {
-// ошибка
-}
-if ($service === null) {
-// ошибка
-}
-$user_id = dbMisc::getGlobalUserId($user_id, $service);
-if (is_numeric($type)) {
-    $data = dbProblem::getProblemByNumber($user_id, $type);
-}
-elseif ($type === 'random') {
-    $data = dbProblem::getProblem($user_id);
-}
-else {
-    $data = dbProblem::getProblemByType($user_id, $type);
-}
-$answer = array ('success' => 'true','data' => $data);
-$response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-return $response;    
+$app->get('/problems/problem', function (Request $request, Response $response)
+{
+    $type = $request->getQueryParam('type', null);
+    $user_id = $request->getQueryParam('user_id', null);
+    $service = $request->getQueryParam('service', null);
+
+    if ($type === null)
+    {
+    // ошибка
+    }
+    if ($user_id === null)
+    {
+    // ошибка
+    }
+    if ($service === null)
+    {
+    // ошибка
+    }
+
+    $user_id = dbMisc::getGlobalUserId($user_id, $service);
+
+    if (is_numeric($type))
+    {
+        $data = dbProblem::getProblemByNumber($user_id, $type);
+    }
+    elseif ($type === 'random')
+    {
+        $data = dbProblem::getProblem($user_id);
+    }
+    else
+        {
+        $data = dbProblem::getProblemByType($user_id, $type);
+    }
+
+    $problem = $data['problem'];
+    unset ($data["problem"]);
+    $answer = array ('success' => 'true' , 'problem' => $problem,'data' => $data);
+    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    return $response;
 });
 
 // Виталик
-$app->get('/api/v1/solutions/solution', function (Request $request, Response $response) {
-$problem_id = $request->getQueryParam('problem_id', null);
-$user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null);
-if ($problem_id === null) {
-// ошибка
-}
-if ($user_id === null) {
-// ошибка
-}
-if ($service === null) {
-// ошибка
-}
-$user_id = dbMisc::getGlobalUserId($user_id, $service);
-$data = dbResult::getSolution($user_id, $problem_id);
-$answer = array ('success' => 'true' , 'data' => $data);
-$response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-return $response;    
+$app->get('/problems/solution', function (Request $request, Response $response)
+{
+    $problem_id = $request->getQueryParam('problem_id', null);
+    $user_id = $request->getQueryParam('user_id', null);
+    $service = $request->getQueryParam('service', null);
+
+    if ($problem_id === null)
+    {
+    // ошибка
+    }
+    if ($user_id === null)
+    {
+    // ошибка
+    }
+    if ($service === null)
+    {
+    // ошибка
+    }
+
+    $user_id = dbMisc::getGlobalUserId($user_id, $service);
+
+    $data = dbResult::getSolution($user_id, $problem_id);
+    $answer = array ('success' => 'true' , 'data' => $data);
+    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    return $response;
 });
 
 // Виталик
-$app->get('/api/v1/answers/answer', function (Request $request, Response $response) {
-$problem_id = $request->getQueryParam('problem_id', null);
-$user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null);
-if ($problem_id === null) {
-// ошибка
-}
-if ($user_id === null) {
-// ошибка
-}
-if ($service === null) {
-// ошибка
-}  
-$user_id = dbMisc::getGlobalUserId($user_id, $service);
-$data = dbResult::getAnswer($user_id, $problem_id);
-$answer = array ('success' => 'true' , 'data' => $data);
-$response->getBody()->write($response->withJson($answer, 200, JSON_UNESCAPED_UNICODE));
-return $response;    
+$app->get('/problems/answer', function (Request $request, Response $response)
+{
+    $problem_id = $request->getQueryParam('problem_id', null);
+    $user_id = $request->getQueryParam('user_id', null);
+    $service = $request->getQueryParam('service', null);
+
+    if ($problem_id === null)
+    {
+    // ошибка
+    }
+    if ($user_id === null)
+    {
+    // ошибка
+    }
+    if ($service === null)
+    {
+    // ошибка
+    }
+
+    $user_id = dbMisc::getGlobalUserId($user_id, $service);
+
+    $data = dbResult::getAnswer($user_id, $problem_id);
+    $answer = array ('success' => 'true' , 'data' => $data);
+    $response->getBody()->write($response->withJson($answer, 200, JSON_UNESCAPED_UNICODE));
+    return $response;
 });
 
 // Андрей
-$app->post('/api/v1/answers/answer', function (Request $request, Response $response) {
-
-});
-
-// Андрей
-$app->get('/api/v1/resources/resource', function (Request $request, Response $response) {
-
-});
-
-// Андрей
-$app->put('api/v1/resources/resource', function (Request $request, Response $response)
+$app->post('problems/answer', function (Request $request, Response $response)
 {
 
 });
 
 // Андрей
-$app->get('/api/v1/problems/problem_types/problem_type', function (Request $request, Response $response) {
+$app->get('/resources/resource', function (Request $request, Response $response)
+{
+
+});
+
+// Андрей
+$app->put('/resources/resource', function (Request $request, Response $response)
+{
+
+});
+
+// Андрей
+$app->get('/problem_types/problem_type', function (Request $request, Response $response)
+{
 
 });
 
