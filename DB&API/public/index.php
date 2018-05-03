@@ -42,6 +42,15 @@ $app->get('/api/v1/problems/problem', function (Request $request, Response $resp
 $type = $request->getQueryParam('type', null);
 $user_id = $request->getQueryParam('user_id', null);
 $service = $request->getQueryParam('service', null);
+if ($type === null) {
+// ошибка
+}
+if ($user_id === null) {
+// ошибка
+}
+if ($service === null) {
+// ошибка
+}
 $user_id = dbMisc::getGlobalUserId($user_id, $service);
 if (is_numeric($type)) {
     $data = dbProblem::getProblemByNumber($user_id, $type);
@@ -61,7 +70,16 @@ return $response;
 $app->get('/api/v1/solutions/solution', function (Request $request, Response $response) {
 $problem_id = $request->getQueryParam('problem_id', null);
 $user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null); 
+$service = $request->getQueryParam('service', null);
+if ($problem_id === null) {
+// ошибка
+}
+if ($user_id === null) {
+// ошибка
+}
+if ($service === null) {
+// ошибка
+}
 $user_id = dbMisc::getGlobalUserId($user_id, $service);
 $data = dbResult::getSolution($user_id, $problem_id);
 $answer = array ('success' => 'true' , 'data' => $data);
@@ -73,7 +91,16 @@ return $response;
 $app->get('/api/v1/answers/answer', function (Request $request, Response $response) {
 $problem_id = $request->getQueryParam('problem_id', null);
 $user_id = $request->getQueryParam('user_id', null);
-$service = $request->getQueryParam('service', null);  
+$service = $request->getQueryParam('service', null);
+if ($problem_id === null) {
+// ошибка
+}
+if ($user_id === null) {
+// ошибка
+}
+if ($service === null) {
+// ошибка
+}  
 $user_id = dbMisc::getGlobalUserId($user_id, $service);
 $data = dbResult::getAnswer($user_id, $problem_id);
 $answer = array ('success' => 'true' , 'data' => $data);
