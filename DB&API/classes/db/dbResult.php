@@ -34,7 +34,7 @@ class dbResult
         $stmt->execute(array($problem_id, $user_id));
         if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
         {
-            throw new UserExceptions("Вы не получали задания, на которое просите правильный ответ!");
+            throw new UserExceptions("Вы не получали задания, для которого просите правильный ответ!", 4);
         }
 
         $stmt = $conn->prepare('SELECT problem_answer FROM problem WHERE problem_id = ?');
@@ -69,7 +69,7 @@ class dbResult
         $stmt->execute(array($problem_id, $user_id));
         if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
         {
-            throw new UserExceptions("Вы не получали задания, на которое просите разбор!");
+            throw new UserExceptions("Вы не получали задания, для которого просите разбор!", 4);
         }
 
         $stmt = $conn->prepare('SELECT problem_solution FROM problem WHERE problem_id = ?');

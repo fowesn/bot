@@ -34,7 +34,6 @@ class dbAssignment
         $user_check->execute(array($user_id));
         if ($user_check->fetch()['user_id'] === null)
         {
-            /** @throws ?Exception  Specified user_id does not exist */
             throw new Exception("Invalid parameter: user_id; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
@@ -44,7 +43,6 @@ class dbAssignment
         $problem_check->execute(array($problem_id));
         if ($problem_check->fetch()['problem_id'] === null)
         {
-            /** @throws ?Exception  Specified problem_id does not exist */
             throw new Exception("Invalid parameter: problem_id; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
@@ -85,7 +83,7 @@ class dbAssignment
         $stmt->execute(array($problem_id, $user_id));
         if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
         {
-            throw new UserExceptions("Вы не получали задания, на которое пытаетесь дать ответ!");
+            throw new UserExceptions("Вы не получали задания, на которое пытаетесь дать ответ!", 4);
         }
 
         // Saving last answer in assignment

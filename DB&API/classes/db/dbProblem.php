@@ -40,7 +40,7 @@ class dbProblem
         // No unsolved problems left
         if (empty($row))
         {
-            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(");
+            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(", 1);
         }
 
         $problem_id = $row['problem_id'];
@@ -85,7 +85,7 @@ class dbProblem
         $type_check->execute(array($problem_type_code));
         if ($type_check->fetch()['problem_type_id'] === null)
         {
-            throw new UserExceptions("Такой категории мы не знаем!");
+            throw new UserExceptions("Такой категории мы не знаем!", 2);
         }
 
         $stmt = $conn->prepare('SELECT problem.problem_id, problem.problem_statement FROM problem 
@@ -98,7 +98,7 @@ class dbProblem
         // No unsolved problems left
         if (empty($row))
         {
-            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(");
+            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(", 1);
         }
 
         $problem_id = $row['problem_id'];
@@ -143,7 +143,7 @@ class dbProblem
         $number_check->execute(array((int)$exam_item_number));
         if ($number_check->fetch()['exam_item_id'] === null)
         {
-            throw new UserExceptions("Такого номера задания нет в экзамене!");
+            throw new UserExceptions("Такого номера задания нет в экзамене!", 3);
         }
 
 
@@ -157,7 +157,7 @@ class dbProblem
         // No unsolved problems left
         if (empty($row))
         {
-            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(");
+            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(", 1);
         }
 
         $problem_id = $row['problem_id'];
