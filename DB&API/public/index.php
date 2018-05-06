@@ -141,26 +141,71 @@ $app->get('/problems/answer', function (Request $request, Response $response)
 
 // Андрей
 $app->post('problems/answer', function (Request $request, Response $response)
-{
+{   $problem = $request->getQueryParam('problem_id', null);
+    $user_answer = $request->getQueryParam('user_answer', null);
+    $user = $request->getQueryParam('user_id', null);
+    $service = $request->getQueryParam('service', null);
 
+    if ($problem === null) {
+        throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+
+    if ($user_answer === null) {
+        throw new Exception("Invalid parameter: user_answer is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+
+    if ($user === null) {
+        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+
+    if ($service === null) {
+        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+    $user_id = dbMisc::getGlobalUserId($user, $service);
+    if (checkAnswer::checkB(dbAssignment::assignAnswer($user_id, $problem, $user_answer), $user_answer)) {
+        $answer = array ('success' => 'true' , 'result' => true);
+    } else {
+        $answer = array ('success' => 'true' , 'result' => false);
+    }
+    $response->getBody()->write($response->withJson($answer, 200, JSON_UNESCAPED_UNICODE));
+    return $response;
 });
 
 // Андрей
 $app->get('/resources/resource', function (Request $request, Response $response)
-{
-
+{   $data = dbResource::getResourceTypes();
+    $answer = array ('success' => 'true' , 'data' => $data);
+    $response->getBody()->write($response->withJson($answer, 200, JSON_UNESCAPED_UNICODE));
+    return $response;
 });
 
 // Андрей
 $app->put('/resources/resource', function (Request $request, Response $response)
-{
+{   $user = $request->getQueryParam('user_id', null);
+    $service = $request->getQueryParam('service', null);
+    $resource = $request->getQueryParam('resource', null);
 
+    if ($user === null) {
+        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+
+    if ($service === null) {
+        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+
+    if ($resource === null) {
+        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+    }
+    $user_id = dbMisc::getGlobalUserId($user, $service);
+    dbResource::setPreferredResource($user_id, $resource);
 });
 
 // Андрей
 $app->get('/problem_types/problem_type', function (Request $request, Response $response)
-{
-
+{   $data = dbMisc::getProblemTypes();
+    $answer = array ('success' => 'true' , 'data' => $data);
+    $response->getBody()->write($response->withJson($answer, 200, JSON_UNESCAPED_UNICODE));
+    return $response;
 });
 
 $app->run();
