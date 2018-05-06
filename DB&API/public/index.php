@@ -46,15 +46,15 @@ $app->get('/problems/problem', function (Request $request, Response $response)
 
     if ($type === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: type is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
     if ($user_id === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
     if ($service === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
 
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
@@ -68,7 +68,7 @@ $app->get('/problems/problem', function (Request $request, Response $response)
         $data = dbProblem::getProblem($user_id);
     }
     else
-        {
+    {
         $data = dbProblem::getProblemByType($user_id, $type);
     }
 
@@ -88,15 +88,17 @@ $app->get('/problems/solution', function (Request $request, Response $response)
 
     if ($problem_id === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
+
     if ($user_id === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
+
     if ($service === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
 
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
@@ -116,15 +118,17 @@ $app->get('/problems/answer', function (Request $request, Response $response)
 
     if ($problem_id === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
+
     if ($user_id === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
+
     if ($service === null)
     {
-    // ошибка
+        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
 
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
