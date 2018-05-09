@@ -9,7 +9,6 @@ $app = new \Slim\App();
 
 $container = $app->getContainer();
 
-// логгер
 $container['logger'] = function ($c)
 {
     $logger = new \Monolog\Logger('APIlogger');
@@ -18,18 +17,17 @@ $container['logger'] = function ($c)
     return $logger;
 };
 
-// обработка ошибок
 $container['errorHandler'] = function ($c)
 {
     return function ($request, $response, $exception) use ($c) {
-        // если ошибка произошла по вине пользователя
+        // error caused by user's actions
         if ($exception instanceof UserExceptions)
         {
             return $c['response']->withJson(array ('success' => 'false',
                 'error' => ["code" => $exception->getCode(),
                     "message" => $exception->getMessage()]), 200, JSON_UNESCAPED_UNICODE);
         }
-        // иначе, системная ошибка
+        // otherwise, system error
         $c->logger->addInfo($exception->getMessage());
         return $c['response']->withStatus($exception->getCode())
             ->withHeader('Content-Type', 'text/html')
@@ -37,7 +35,6 @@ $container['errorHandler'] = function ($c)
     };
 };
 
-// Виталик
 $app->get('/problems/problem', function (Request $request, Response $response)
 {
     $type = $request->getQueryParam('type', null);
@@ -79,7 +76,6 @@ $app->get('/problems/problem', function (Request $request, Response $response)
     return $response;
 });
 
-// Виталик
 $app->get('/problems/solution', function (Request $request, Response $response)
 {
     $problem_id = $request->getQueryParam('problem_id', null);
@@ -109,7 +105,6 @@ $app->get('/problems/solution', function (Request $request, Response $response)
     return $response;
 });
 
-// Виталик
 $app->get('/problems/answer', function (Request $request, Response $response)
 {
     $problem_id = $request->getQueryParam('problem_id', null);
@@ -139,7 +134,6 @@ $app->get('/problems/answer', function (Request $request, Response $response)
     return $response;
 });
 
-// Андрей крутой
 $app->post('problems/answer', function (Request $request, Response $response)
 {   $problem_id = $request->getQueryParam('problem_id', null);
     $user_answer = $request->getQueryParam('user_answer', null);
@@ -178,7 +172,6 @@ $app->post('problems/answer', function (Request $request, Response $response)
     return $response;
 });
 
-// Андрей крутой
 $app->get('/resources/resource', function (Request $request, Response $response)
 {   
     $data = dbResource::getResourceTypes();
@@ -187,7 +180,6 @@ $app->get('/resources/resource', function (Request $request, Response $response)
     return $response;
 });
 
-// Андрей крутой
 $app->put('/resources/resource', function (Request $request, Response $response)
 {   
     $user_id = $request->getQueryParam('user_id', null);
@@ -205,11 +197,10 @@ $app->put('/resources/resource', function (Request $request, Response $response)
     if ($resource_type === null) {
         throw new Exception("Invalid parameter: resource_type is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
     }
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbMisc::getGlobalUserId($user_id, $service);
     dbResource::setPreferredResource($user_id, $resource_type);
 });
 
-// Андрей крутой
 $app->get('/problem_types/problem_type', function (Request $request, Response $response)
 {   
     $data = dbMisc::getProblemTypes();
