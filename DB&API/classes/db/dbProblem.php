@@ -98,7 +98,7 @@ class dbProblem
         // No unsolved problems left
         if (empty($row))
         {
-            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(", 1);
+            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(\nНо пока что только по этой теме!", 1);
         }
 
         $problem_id = $row['problem_id'];
@@ -157,7 +157,7 @@ class dbProblem
         // No unsolved problems left
         if (empty($row))
         {
-            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(", 1);
+            throw new UserExceptions("Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(\nНо пока что только под этим номером! :)", 1);
         }
 
         $problem_id = $row['problem_id'];

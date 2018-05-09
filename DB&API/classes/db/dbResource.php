@@ -47,7 +47,7 @@ class dbResource
         $stmt->execute(array($user_id));
         $pref = $stmt->fetch()['preferred_resource_type'];
 
-        $stmt = $conn->prepare('SELECT resource.resource_name, resource_type.resource_type_code, resource.resource_content 
+        $stmt = $conn->prepare('SELECT resource.resource_name AS Name, resource_type.resource_type_code AS Type, resource.resource_content AS Content 
                                 FROM resource, resource_type 
                                 WHERE (resource.resource_collection_id = ? 
                                 AND resource.resource_type_id = ? 
