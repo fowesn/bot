@@ -55,39 +55,38 @@ class OtherRequests
     }
     public static function setUserPreferredResource($userId, $preferredResource)
     {
-        $message = "функция setUsePreferredResource, пользователь " . $userId . " ресурс " . $preferredResource;
-        // put запрос api/v1/resources/resource
-        $data = array('resource_type' => $preferredResource, 'user_id' => (string)$userId, 'service' => 'vk');
-        $data_json = http_build_query($data);
+        $preferredResource = mb_convert_encoding($preferredResource, 'utf-8', mb_detect_encoding($preferredResource));
+        $data = array('resource_type' => urlencode($preferredResource), 'user_id' => (string)$userId, 'service' => 'vk');
+        $data_query = http_build_query($data);
 
-        /*$ch = curl_init();
+
+        $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data_json)));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_query);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = json_decode(curl_exec($ch));
+        $result = json_decode(curl_exec($ch));
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);*/
+        curl_close($ch);
 
-        $response = json_decode(file_get_contents('http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource?' . $data));
 
         /*$ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, "user_id=124&service=vk&resource_type=текст");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_query);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $response = json_decode(curl_exec($ch));
+        $result= json_decode(curl_exec($ch));
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        curl_close($ch);*/
 
 
         //проверка ошибок
         if ($code == 404 || $code == 500)
-            $message = $code . ". Что-то пошло не так. Попробуй ещё раз! " . $userId . " " . $preferredResource . "\r\n" . $response . "\r\n" . $data_json;
-        else */if ($response->success !== "true")
-            $message = $response->error->message;
+            $message = $code . ". Что-то пошло не так. Попробуй ещё раз!";
+        else if ($result->success !== "true")
+            $message = $result->error->message;
 
         //если нет ошибок, формирование сбщ пользователю
         else

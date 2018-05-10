@@ -16,14 +16,17 @@ class Task
         $params = array("type" => "random", "user_id" => $userId, "service" => "vk");
         $request_params = http_build_query($params);
 
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, self::$url . $request_params);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $result = json_decode(curl_exec($ch));
         //проверка кодов http
-        $code = substr(get_headers(self::$url . $request_params)[0], 9, 3);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($code != 200) {
             $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
             return array("user_id" => $userId, "message" => $message);
         }
 
-        $result = json_decode(file_get_contents(self::$url . $request_params));
         //ошибки пользователя
         if ($result->success !== "true") {
             $message = $result->error->message;
