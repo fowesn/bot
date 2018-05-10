@@ -23,5 +23,8 @@ class Answer
         // get запрос /api/v1/solutions/solution
         return array("user_id" => $userId, "message" => $message);
     }
+    public static function checkUserAnswer($userId, $taskId, $answer) {
+
+    }
     // post запрос /api/v1/answers/answer проверяет правильность ответа
 }

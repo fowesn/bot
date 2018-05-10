@@ -20,5 +20,6 @@ define("SECRET_KEY", "kappa_tryout_key");
 // версия vk api
 define("VERSION_VK_API", "5.71");
 // адрес сервера с api и бд
-define("HOST_API", "http://kappa.cs.karelia.ru/~nestulov");
-
+define("HOST_API", 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/');
+// стандартное сообщение при ошибке сервера
+define("SERVER_ERROR_MESSAGE", 'Что-то пошло не так. Попробуй снова!');

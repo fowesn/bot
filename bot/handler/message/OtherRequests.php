@@ -6,21 +6,92 @@
  * Time: 14:39
  */
 
+
 class OtherRequests
 {
+    private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
+    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/';
     public static function getThemesList() {
-        $message = "темы темы темы";
-        // get запрос /api/v1/problems/problem_types/problem_type
+        $url = self::$url . 'problem_types/problem_type';
+        //проверка кодов http
+        $code = substr(get_headers($url)[0], 9, 3);
+        if($code != 200)
+            $message = $code . " " . self::$server_error_message . "\r\n\r\n";
+        else {
+            $result = json_decode(file_get_contents($url));
+            //проверка ошибок пользователя
+            if ($result->success !== "true") {
+                $message = $result->error->message;
+            } else {
+                //если ошибок нет
+                $message = "У меня есть задания по следующим темам:\r\n\r\n";
+                foreach ($result->data as $theme)
+                    $message .= str_replace("_", " ", $theme) . "\r\n";
+            }
+            $message .= "\r\n\r\nЧтобы получить задание по одной из тем, напиши мне \"задание <название темы>\".";
+        }
         return $message;
     }
     public static function getResourceTypesList() {
-        $message = "ресурсы ресурсы ресурсы";
-        // get запрос /api/v1/resources/resource
+        $url = self::$url . 'resources/resource';
+        //проверки кодов http
+        $code = substr(get_headers($url)[0], 9, 3);
+        if($code != 200)
+            $message = $code . " " . self::$server_error_message . "\r\n\r\n";
+        else {
+            $result = json_decode(file_get_contents($url));
+            //проверка ошибок пользователя
+            if ($result->success !== "true") {
+                $message = $result->error->message;
+            } else {
+                //если ошибок нет
+                $message = "Вот список ресурсов, в виде которых я могу присылать тебе задания:\r\n\r\n";
+                foreach ($result->data as $resource)
+                    $message .= $resource . "\r\n";
+            }
+            $message .= "\r\n\r\nЧтобы установить один из ресурсов, напиши мне \"ресурс <название ресурса>\"";
+        }
         return $message;
     }
-    public static function setUserPreferredResource($userId, $preferredResource) {
+    public static function setUserPreferredResource($userId, $preferredResource)
+    {
         $message = "функция setUsePreferredResource, пользователь " . $userId . " ресурс " . $preferredResource;
         // put запрос api/v1/resources/resource
+        $data = array('resource_type' => $preferredResource, 'user_id' => (string)$userId, 'service' => 'vk');
+        $data_json = http_build_query($data);
+
+        /*$ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data_json)));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = json_decode(curl_exec($ch));
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);*/
+
+        $response = json_decode(file_get_contents('http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource?' . $data));
+
+        /*$ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "user_id=124&service=vk&resource_type=текст");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = json_decode(curl_exec($ch));
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+
+        //проверка ошибок
+        if ($code == 404 || $code == 500)
+            $message = $code . ". Что-то пошло не так. Попробуй ещё раз! " . $userId . " " . $preferredResource . "\r\n" . $response . "\r\n" . $data_json;
+        else */if ($response->success !== "true")
+            $message = $response->error->message;
+
+        //если нет ошибок, формирование сбщ пользователю
+        else
+            $message = "Ресурс \"" . $preferredResource . "\" установлен успешно!";
         return array("user_id" => $userId, "message" => $message);
     }
     public static function getHelpMessage() {
