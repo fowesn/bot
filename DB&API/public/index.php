@@ -135,29 +135,30 @@ $app->get('/problems/answer', function (Request $request, Response $response)
 });
 
 $app->post('problems/answer', function (Request $request, Response $response)
-{   $problem_id = $request->getQueryParam('problem_id', null);
-    $user_answer = $request->getQueryParam('user_answer', null);
-    $user_id = $request->getQueryParam('user_id', null);
-    $service = $request->getQueryParam('service', null);
+{   
+    $problem_id = $request->getParam('problem_id', null);
+    $answer = $request->getParam('answer', null);
+    $user_id = $request->getParam('user_id', null);
+    $service = $request->getParam('service', null);
 
     if ($problem_id === null) 
     {
-        throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: problem_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($user_answer === null) 
     {
-        throw new Exception("Invalid parameter: user_answer is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: user_answer is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($user_id === null) 
     {
-        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($service === null) 
     {
-        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
     }
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
     if (checkAnswer::checkB(dbAssignment::assignAnswer($user_id, $problem_id, $user_answer), $user_answer)) 
@@ -168,7 +169,7 @@ $app->post('problems/answer', function (Request $request, Response $response)
     {
         $answer = array ('success' => 'true' , 'result' => false);
     }
-    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
@@ -176,36 +177,42 @@ $app->get('/resources/resource', function (Request $request, Response $response)
 {   
     $data = dbResource::getResourceTypes();
     $answer = array ('success' => 'true' , 'data' => $data);
-    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
 $app->put('/resources/resource', function (Request $request, Response $response)
 {   
-    $user_id = $request->getQueryParam('user_id', null);
-    $service = $request->getQueryParam('service', null);
-    $resource_type = $request->getQueryParam('resource_type', null);
+    $user_id = $request->getParam('user_id', null);
+    $service = $request->getParam('service', null);
+    $resource_type = urldecode($request->getParam('resource_type', null));
+    // нужно ли это??
+    $resource_type = mb_convert_encoding($resource_type, "utf-8", mb_detect_encoding($resource_type));
 
     if ($user_id === null) {
-        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($service === null) {
-        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($resource_type === null) {
-        throw new Exception("Invalid parameter: resource_type is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: resource_type is NULL; index file, line: " . __LINE__, 404);
     }
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
     dbResource::setPreferredResource($user_id, $resource_type);
+    
+    $answer = array ('success' => 'true');
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    return $response;
 });
 
 $app->get('/problem_types/problem_type', function (Request $request, Response $response)
 {   
     $data = dbMisc::getProblemTypes();
     $answer = array ('success' => 'true' , 'data' => $data);
-    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
