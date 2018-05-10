@@ -43,15 +43,15 @@ $app->get('/problems/problem', function (Request $request, Response $response)
 
     if ($type === null)
     {
-        throw new Exception("Invalid parameter: type is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: type is NULL; index file, line: " . __LINE__, 404);
     }
     if ($user_id === null)
     {
-        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
     }
     if ($service === null)
     {
-        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
     }
 
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
@@ -72,7 +72,7 @@ $app->get('/problems/problem', function (Request $request, Response $response)
     $problem = $data['problem'];
     unset ($data["problem"]);
     $answer = array ('success' => 'true' , 'problem' => $problem,'data' => $data);
-    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
@@ -84,24 +84,24 @@ $app->get('/problems/solution', function (Request $request, Response $response)
 
     if ($problem_id === null)
     {
-        throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: problem_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($user_id === null)
     {
-        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($service === null)
     {
-        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
     }
 
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
 
     $data = dbResult::getSolution($user_id, $problem_id);
     $answer = array ('success' => 'true' , 'data' => $data);
-    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
@@ -113,24 +113,24 @@ $app->get('/problems/answer', function (Request $request, Response $response)
 
     if ($problem_id === null)
     {
-        throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: problem_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($user_id === null)
     {
-        throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
     }
 
     if ($service === null)
     {
-        throw new Exception("Invalid parameter: service is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 404);
+        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
     }
 
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
 
     $data = dbResult::getAnswer($user_id, $problem_id);
     $answer = array ('success' => 'true' , 'data' => $data);
-    $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
