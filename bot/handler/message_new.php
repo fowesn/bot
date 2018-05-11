@@ -37,8 +37,11 @@ class message_new
         switch ( $user_message[0] )
         {
             case 'фото':
-                \api\Api::messageSend(array("user_id" => $data->object->user_id, "message" => "хотя бы в кейс попал"));
-                \api\Api::pictureAttachmentMessageSend($data->object->user_id);
+				$result = \api\Api::pictureAttachmentMessageSend($data->object->user_id,'кот.png');
+				$photo = "photo".$result->owner_id."_".$result->id;
+//				throw new \api\RequestError($photo);
+                \api\Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу","attachment" => $photo));
+
                 break;
             case 'помощь':
                 if(count($user_message) > 1)

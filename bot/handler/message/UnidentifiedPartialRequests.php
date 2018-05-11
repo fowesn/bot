@@ -10,7 +10,7 @@ class UnidentifiedPartialRequests
 {
     public static function help()
     {
-        return "Чтобы посмотреть справку, напиши \"помощь\"";
+        return "Чтобы посмотреть справку, напиши \"помощь\" ∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨";
     }
     public static function themes()
     {

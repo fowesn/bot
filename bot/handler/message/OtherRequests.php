@@ -71,6 +71,8 @@ class OtherRequests
         curl_close($ch);
 
 
+        //$response = json_decode(file_get_contents('http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource?' . $data));
+
         /*$ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));

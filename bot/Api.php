@@ -40,59 +40,83 @@ class Api {
         if (!isset($result->error))
 			return;
 		else
-			throw new RequestError($result->error->error_msg, $result->error->error_code);
+			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
 
 	}
 
     /**
-     * @param
+	 *
+	 * @param $user_id получатель изображения
+     * @param $image_path путь до файла изображения
      * @throws \Exception
+	 * @return массив полей загруженного изображения на сервер вк
      */
-    static public function pictureAttachmentMessageSend($user_id) {
 
-        $group_id = "123539368";
-        $album_id = "253228018";
-        $image_path = dirname(__FILE__) . '/img.jpg';
+    static public function pictureAttachmentMessageSend($user_id, $image_path) {
+//
 
-        self::messageSend(array("user_id" => $user_id, "message" => "пока что всё ок"));
+        /** @var  $type - формат изображения */
+        $type = exif_imagetype($image_path);
+        /** @var  $mimeType string mime тип изображения для запроса */
+        $mimeType = image_type_to_mime_type($type);
 
-        $group_request_params = array("group_id" => $group_id, "album_id" => $album_id);
-        $group_request_params = self::setVersionAndToken($group_request_params);
-        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.getUploadServer?' . http_build_query($group_request_params)));
+
+		$file = curl_file_create($image_path, $mimeType, 'filename.jpg');
+//		$file = LoadFile::getImage($image_path);
+
+		/** @var  $request_params - Надо попробовать с create ....*/
+        $request_params = array("peer_id" => $user_id);
+        $request_params = self::setVersionAndToken($request_params);
+        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.getMessagesUploadServer?' .
+            "peer_id=" . $request_params["peer_id"] . "&access_token=" .
+            $request_params["access_token"] . "&v=" . $request_params["v"]));
+
+        /** В случае ошибки запроса */
         if(isset($result->error))
-            //throw new RequestError($result->error->error_msg, $result->error->error_code);
-            self::messageSend(array("user_id" => $user_id, "message" => "err" . $result->error->error_msg . "  " . $result->error->error_code));
+            throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg . " " . 'https://api.vk.com/method/photos.getMessagesUploadServer?' .
+                http_build_query($request_params), $result->error->error_code);
 
-        self::messageSend(array("user_id" => $user_id, "message" => "до сих пор ок"));
+
+        /** @var  $server - сервер загрузки изображения */
+
         $server = $result->response->upload_url;
-        $postparam = array("file1" => "@" . $image_path);
+//        $server = "http://kappa.cs.petrsu.ru/~omelchen/vk/bot/index2.php";
+//		/** @var  $postParam поле с бинарным изображениям для POST запроса */
+        $postParam = LoadFile::getImage($image_path);
+//		$postParam = array("photo"=>$file);
         //Отправляем файл на сервер
         $ch = curl_init($server);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,$postparam);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; charset=UTF-8'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,$postParam);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; boundary=--------------------------f4eabd0465dfe687'));
+//		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data-alternate; boundary=--------------------------f4eabd0465dfe687'));
+        /** @var  $photo_server_json - Ответ на загрузку изображения */
+
         $photo_server_json = json_decode(curl_exec($ch));
         curl_close($ch);
+
+
+        /** В случае неудачной отправки */
         if(isset($photo_server_json->error))
-            self::messageSend(array("user_id" => $user_id, "message" => "err"));
-        self::messageSend(array("user_id" => $user_id, "message" => "почему тогда его нет в альбоме?"));
+            throw new RequestError(__FILE__." : ".__LINE__.$photo_server_json->error,$photo_server_json->error->error_code);
+
+        /** @var  $photo_save - параметры для сохранения фото на сервере */
         $photo_save = array(
             "server" => $photo_server_json->server,
-            "photos_list" => $photo_server_json->photos_list,
-            "album_id" => $album_id,
             "hash" => $photo_server_json->hash,
-            'gid' => $group_id);
+			"photo" =>$photo_server_json->photo
+            );
         $photo_save = self::setVersionAndToken($photo_save);
-        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.save?' . http_build_query($photo_save)));
-        if (!isset($result->error))
-            return;
-        else {
-            self::messageSend(array("user_id" => $user_id, "message" => "err"));
-        }
-        self::messageSend(array("user_id" => $user_id, "message" => "тут явно чето не так"));
-        //throw new RequestError($result->error->error_msg, $result->error->error_code);
-        return;
+
+        /** @var - Получение id и других параметров изображения на сервере VK $result */
+        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.saveMessagesPhoto?' . http_build_query($photo_save)));
+        /** В случае если произошла ошибка */
+        if (isset($result->error))
+           throw new RequestError(__FILE__." : ".__LINE__.$result->error->error_msg,$result->error->error_code);
+
+        $result = $result->response[0];
+        return $result;
     }
 	/**
 	 *  Метод является оберткой метода getHistory, в коем не участвует
@@ -188,3 +212,4 @@ class RequestError extends \Exception {
 		parent::__construct($message, $code, $previous);
 	}
 }
+

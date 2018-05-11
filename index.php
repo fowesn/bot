@@ -57,20 +57,26 @@ $data = json_decode(file_get_contents('php://input'));
 //$data = json_decode($_GET['data']);
 
 
+//временно ломаю время
+
+
+
 try {
-	CallbackApi::requestHandler($data);
 	echo "ok";
+	CallbackApi::requestHandler($data);
+
+
 } catch (\api\SecurityBreach $err) {
 	echo $err->getMessage();
-	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
+	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 
 } catch (\api\EventNotSupported $err) {
 	echo $err->getMessage();
-	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
+	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 
 } catch (\Exception $err) {
 	$err->getMessage();
-	file_put_contents("log.log", $err->getMessage() . "\n", FILE_APPEND);
+	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 }
 ?>
 
