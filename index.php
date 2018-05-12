@@ -54,29 +54,27 @@ spl_autoload_register
 /////////////////////////////////////////////////
 $data = json_decode(file_get_contents('php://input'));
 //не норма
-//$data = json_decode($_GET['data']);
 
-
-//временно ломаю время
 
 
 
 try {
-	echo "ok";
+
 	CallbackApi::requestHandler($data);
 
-
 } catch (\api\SecurityBreach $err) {
-	echo $err->getMessage();
+	//echo $err->getMessage();
 	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 
 } catch (\api\EventNotSupported $err) {
-	echo $err->getMessage();
+//	echo $err->getMessage();
 	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 
 } catch (\Exception $err) {
-	$err->getMessage();
+//	$err->getMessage();
 	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
+}finally {
+	echo "ok";
 }
 ?>
 

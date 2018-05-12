@@ -37,7 +37,7 @@ class message_new
         switch ( $user_message[0] )
         {
             case 'фото':
-				$result = \api\Api::pictureAttachmentMessageSend($data->object->user_id,'кот.png');
+				$result = \api\Api::pictureAttachmentMessageSend($data->object->user_id,'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
 				$photo = "photo".$result->owner_id."_".$result->id;
 //				throw new \api\RequestError($photo);
                 \api\Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу","attachment" => $photo));

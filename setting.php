@@ -13,7 +13,6 @@ define("INCLUDED", true);
  * Константы для работы с vk api
  */
 // строка для подтверждения адреса сервера из настроек Callback API
-define("CONFIRMATION_TOKEN", "09476c9c");
 // ключ доступа сообщества - для обращения к API от имени сообщества
 define("COMMUNITY_TOKEN", "2e0c1c240cd3cbae9542b68e1c647a47759f5277f298c431f579d06924612e5dd89ef80fdde7f4a73afd3");
 // Secret key

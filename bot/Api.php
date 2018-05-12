@@ -55,7 +55,7 @@ class Api {
     static public function pictureAttachmentMessageSend($user_id, $image_path) {
 //
 
-        /** @var  $type - формат изображения */
+        /** @var  $type формат изображения */
         $type = exif_imagetype($image_path);
         /** @var  $mimeType string mime тип изображения для запроса */
         $mimeType = image_type_to_mime_type($type);
@@ -64,7 +64,7 @@ class Api {
 		$file = curl_file_create($image_path, $mimeType, 'filename.jpg');
 //		$file = LoadFile::getImage($image_path);
 
-		/** @var  $request_params - Надо попробовать с create ....*/
+		/** @var  $request_params  Надо попробовать с create ....*/
         $request_params = array("peer_id" => $user_id);
         $request_params = self::setVersionAndToken($request_params);
         $result = json_decode(file_get_contents('https://api.vk.com/method/photos.getMessagesUploadServer?' .
@@ -77,31 +77,71 @@ class Api {
                 http_build_query($request_params), $result->error->error_code);
 
 
-        /** @var  $server - сервер загрузки изображения */
+        /** @var  $server сервер загрузки изображения */
 
         $server = $result->response->upload_url;
-//        $server = "http://kappa.cs.petrsu.ru/~omelchen/vk/bot/index2.php";
-//		/** @var  $postParam поле с бинарным изображениям для POST запроса */
-        $postParam = LoadFile::getImage($image_path);
-//		$postParam = array("photo"=>$file);
-        //Отправляем файл на сервер
-        $ch = curl_init($server);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,$postParam);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; boundary=--------------------------f4eabd0465dfe687'));
-//		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data-alternate; boundary=--------------------------f4eabd0465dfe687'));
-        /** @var  $photo_server_json - Ответ на загрузку изображения */
 
-        $photo_server_json = json_decode(curl_exec($ch));
-        curl_close($ch);
+        $server = parse_url($server);
 
+//        /////////////////////////////////////////////
+		///////////////////////////////////////////////////
+		///
+		///
+		///
+		///
+		///
+		///
+		// устанавливаем соединение с сервером
+        $time_start = time();
+		$fp = fsockopen("ssl://".$server["host"], 443, $errno, $errstr, 5);
+		if (!$fp)
+			throw new \Exception("проблемы с сокетом".$server["host"]);
+		$boundary = "9e99e84655473cf6";
+		$content = LoadFile::getImage($image_path);
+		fwrite($fp, 'POST '.$server["path"].'?'.$server["query"].' HTTP/1.1'."\r\n");
+		fwrite($fp, 'Host: '.$server["host"]." \r\n");
+		fwrite($fp, 'Content-Type: multipart/form-data; boundary='.$boundary."\r\n");
+		fwrite($fp, 'Content-Length: '.strlen($content)."\r\n\r\n");
+		fwrite($fp, $content);
+		$result = '';
 
+			while ( !feof($fp) ) $result .= fgets($fp, 1024);
+			// закрываем соединение
+
+		fclose($fp);
+        $time_end = time();
+        throw new \Exception($time_end - $time_start);
+
+///		/** @var  $postParam поле с бинарным изображениям для POST запроса */
+//        $postParam = LoadFile::getImage($image_path);
+////		$postParam = array("photo"=>$file);
+//        //Отправляем файл на сервер
+////		$curlLog = fopen("curl.log","w");
+//        $ch = curl_init($server);
+//        curl_setopt($ch, CURLOPT_POST, true);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//        curl_setopt($ch, CURLOPT_POSTFIELDS,$postParam);
+//        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; boundary=------------------------9e99e84655473cf6'));
+////		curl_setopt($ch, CURLOPT_VERBOSE,true);
+////		curl_setopt($ch, CURLOPT_STDERR,$curlLog);
+////		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data-alternate'));
+//        /** @var  $photo_server_json Ответ на загрузку изображения */
+//
+//        $photo_server_json = json_decode(curl_exec($ch));
+//        curl_close($ch);
+
+//		fclose($curlLog);
+
+		$result = preg_split('/\n/',$result);
+
+		$photo_server_json = json_decode($result[count($result)-1]);
         /** В случае неудачной отправки */
+
+
         if(isset($photo_server_json->error))
             throw new RequestError(__FILE__." : ".__LINE__.$photo_server_json->error,$photo_server_json->error->error_code);
 
-        /** @var  $photo_save - параметры для сохранения фото на сервере */
+        /** @var  $photo_save параметры для сохранения фото на сервере */
         $photo_save = array(
             "server" => $photo_server_json->server,
             "hash" => $photo_server_json->hash,
@@ -109,7 +149,7 @@ class Api {
             );
         $photo_save = self::setVersionAndToken($photo_save);
 
-        /** @var - Получение id и других параметров изображения на сервере VK $result */
+        /** @var Получение id и других параметров изображения на сервере VK $result */
         $result = json_decode(file_get_contents('https://api.vk.com/method/photos.saveMessagesPhoto?' . http_build_query($photo_save)));
         /** В случае если произошла ошибка */
         if (isset($result->error))

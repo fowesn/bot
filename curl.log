@@ -1,0 +1,6 @@
+array(0) {
+}
+HOST:kappa.cs.petrsu.ru
+content-type:text/plain;charset=UTF-8
+content-length:181
+{"type":"message_new","object":{"id":1493,"date":1526057544,"out":0,"user_id":66270811,"read_state":0,"title":"","body":"фото"},"group_id":123539368,"secret":"kappa_tryout_key"}
