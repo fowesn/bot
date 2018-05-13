@@ -137,7 +137,7 @@ $app->get('/problems/answer', function (Request $request, Response $response)
 $app->post('problems/answer', function (Request $request, Response $response)
 {   
     $problem_id = $request->getParam('problem_id', null);
-    $answer = $request->getParam('answer', null);
+    $user_answer = $request->getParam('answer', null);
     $user_id = $request->getParam('user_id', null);
     $service = $request->getParam('service', null);
 
