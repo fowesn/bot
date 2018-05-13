@@ -74,21 +74,23 @@ class LoadFile {
 	/**
 	 * @param $server array
 	 * @param $data array
+	 * @return string
 	 * @throws \Exception
 	 */
 	public static function sendData($server, $data) {
 		/** https */
 		$fp = fsockopen("ssl://" . $server["host"], 443, $errno, $errstr, 5);
+
 		if (!$fp)
 			throw new RequestError(__FILE__ . ":" . __LINE__ . "проблемы с сокетом" . $server["host"]);
 		/** @var string разделитель полей на сокете $boundary */
 		$boundary = md5(uniqid(time()));
 		/** подготовка контента */
-		$content = "--" . $boundary . '\r\n';
-		$content .= 'Content-Disposition: form-data; name=\"' . $data['fieldName'] . '\"; filename=\"' . $data['fileName'] . '\"\r\n';
+		$content = "--" . $boundary . "\r\n";
+		$content .= 'Content-Disposition: form-data; name="' . $data['fieldName'] . '"; filename="' . $data['fileName'] . '"' . "\r\n";
 		$content .= "Content-Type: " . $data['mime'] . "\r\n";
 		$content .= 'Content-Transfer-Encoding: binary' . "\r\n\r\n";
-		$content .= $data['content'] . '\r\n';
+		$content .= $data['content'] . "\r\n";
 		$content .= "--" . $boundary . '--';
 
 		fwrite($fp, 'POST ' . $server["path"] . '?' . $server["query"] . ' HTTP/1.1' . "\r\n");
@@ -97,10 +99,11 @@ class LoadFile {
 		fwrite($fp, 'Content-Length: ' . strlen($content) . "\r\n\r\n");
 		fwrite($fp, $content);
 		$result = '';
-		while (!feof($fp)) $result .= fgets($fp, 1024);
+		while (!feof($fp)) $result .= fgets($fp, 10);
 		// закрываем соединение
 		fclose($fp);
 		return $result;
 	}
+
 
 }

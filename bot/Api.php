@@ -130,7 +130,7 @@ class Api {
 			throw new RequestError(__FILE__ . " : " . __LINE__ . $document_server_json->error, $document_server_json->error->error_code);
 		/** @var array $document_save - параметры для сохранения документа */
 		$document_save = array(
-			"file" => $document_server_json->server,
+			"file" => $document_server_json->file,
 			"title" => "Задание",
 			"tags" => "персональный бот"
 		);
