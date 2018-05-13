@@ -34,9 +34,9 @@ class dbMisc
         $conn = dbConnection::getConnection();
         $columns = array('vk' => 'user_vk_id', 'tg' => 'user_tg_id');
 
-        if ($user_id === null)
+        if ($user_id === null || !is_numeric($user_id))
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: user_id " . ($user_id === null ? "NULL" : $user_id) . "; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         // Check whether the stated service exists

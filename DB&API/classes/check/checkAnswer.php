@@ -18,9 +18,9 @@ class checkAnswer
     {
         $conn = dbConnection::getConnection();
 
-        if ($assignment_id === null)
+        if ($assignment_id === null || !is_numeric($assignment_id))
         {
-            throw new Exception("Invalid parameter: assignment_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception("Invalid parameter: assignment_id is " . ($assignment_id === null ? "NULL" : $assignment_id) . "; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
         }
 
         if ($answer === null)
@@ -31,6 +31,11 @@ class checkAnswer
         $stmt = $conn->prepare('SELECT problem_id FROM assignment WHERE assignment_id = ?');
         $stmt->execute(array($assignment_id));
         $problem_id = $stmt->fetch()['problem_id'];
+        
+        if ($problem_id === null)
+        {
+            throw new Exception("Invalid parameter: assignment_id " . $assignment_id . " not found in 'assignment'; Method: " . __METHOD__  . "; line: " . __LINE__, 500);
+        }
 
         $stmt = $conn->prepare('SELECT problem_answer FROM problem WHERE problem_id = ?');
         $stmt->execute(array($problem_id));
