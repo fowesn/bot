@@ -19,7 +19,10 @@ class Task
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::$url . $request_params);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-        $result = json_decode(curl_exec($ch));
+        $result = curl_exec($ch);
+        \api\Api::messageSend(array('user_id' => $userId, "message" => $result));
+        //$result = file_get_contents(self::$url . $request_params);
+        $result = json_decode($result);
         //проверка кодов http
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($code != 200) {
@@ -27,18 +30,20 @@ class Task
             return array("user_id" => $userId, "message" => $message);
         }
 
+
         //ошибки пользователя
         if ($result->success !== "true") {
             $message = $result->error->message;
         }
         else {
+
             // если ошибок нет, то собирается сбщ с заданием
             $message = "Задание номер " . $userId ^ $result->problem . ".\r\n\r\n";
 
             // куча напоминаний о том, как прислать ответ и попросить разбор
             $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $userId ^ $result->problem . "\".\r\n" .
-                        "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор" . $userId ^ $result->problem . "\".\r\n" .
-                        "Если ты хочешь узнать правильный ответ, напиши \"ответ" . $userId ^ $result->problem . "\".\r\n\r\n";
+                "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор" . $userId ^ $result->problem . "\".\r\n" .
+                "Если ты хочешь узнать правильный ответ, напиши \"ответ" . $userId ^ $result->problem . "\".\r\n\r\n";
             for ($i = 0; $i < count($result->data); $i++)
                 switch ($result->data[$i]->type) {
                     case 'pdf':
