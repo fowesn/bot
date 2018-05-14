@@ -35,7 +35,7 @@ class CallbackApi {
 		//echo var_dump($data);
 		if (!isset($data->type)) {
 
-				throw new \Exception(__FILE__ . " : " . __LINE__ . "Нет типа события ");
+				throw new \Exception(__FILE__ . " : " . __LINE__ . " Нет типа события");
 		}
 
 		if (!isset($data->secret) or $data->secret != SECRET_KEY)
@@ -45,7 +45,7 @@ class CallbackApi {
 		if (class_exists($data->type, false)) {
 			return call_user_func($data->type . "::run", $data);
 		} else
-			throw new EventNotSupported("Метода " . $data->type . " нет в " . __NAMESPACE__ . "\handler\\" . $data->type);
+			throw new \Exception("Обработчика события " . $data->type . " нет в " . __NAMESPACE__ . "\\handler\\" . $data->type);
 
 
 	}
