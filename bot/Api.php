@@ -24,12 +24,12 @@ class Api {
 	 * code содержит код ответа вк
 	 */
 	static public function messageSend($request_params) {
-	    if (!isset($request_params['user_id'])) {
+		if (!isset($request_params['user_id'])) {
 			throw new \Exception("Не указан user_id");
 		}
-        if (!isset($request_params['message'])) {
-            throw new \Exception("Не указан message");
-        }
+		if (!isset($request_params['message'])) {
+			throw new \Exception("Не указан message");
+		}
 		//в случае если api version и access_token не установлены
 		$request_params = self::setVersionAndToken($request_params);
 
@@ -37,77 +37,80 @@ class Api {
 		$get_params = http_build_query($request_params);
 		$result = json_decode(file_get_contents('https://api.vk.com/method/messages.send?' . $get_params));
 		//обрабатываем ошибки
-        if (!isset($result->error))
+		if (!isset($result->error))
 			return;
 		else
 			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
 
 	}
 
-    /**
+	/**
 	 *
 	 * @param $user_id string получатель изображения
 	 * @param $image_path string путь до файла изображения
-     * @throws \Exception
-	 * @return array массив полей загруженного изображения на сервер вк
-     */
+	 * @throws \Exception
+	 * @return string возвращает параметр attachment для messageSend и других ....
+	 */
 
-    static public function pictureAttachmentMessageSend($user_id, $image_path) {
+	static public function pictureAttachmentMessageSend($user_id, $image_path) {
 		/** @var  $request_params - array параметров к запросу .... */
-        $request_params = array("peer_id" => $user_id);
-        $request_params = self::setVersionAndToken($request_params);
+		$request_params = array("peer_id" => $user_id);
+		$request_params = self::setVersionAndToken($request_params);
 		$result = json_decode(file_get_contents('https://api.vk.com/method/photos.getMessagesUploadServer?' . http_build_query($request_params)));
 
-        /** В случае ошибки запроса */
-        if(isset($result->error))
-            throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg . " " . 'https://api.vk.com/method/photos.getMessagesUploadServer?' .
-                http_build_query($request_params), $result->error->error_code);
+		/** В случае ошибки запроса */
+		if (isset($result->error))
+			throw new RequestError(__FILE__ . " : " . __LINE__ . " " . $result->error->error_msg . " " . 'https://api.vk.com/method/photos.getMessagesUploadServer?' .
+				http_build_query($request_params), $result->error->error_code);
 
 		/** @var  $server - сервер загрузки изображения */
 		$server = parse_url($result->response->upload_url);
+
 		/** @var $result - содержит ответ сервера на загрузку изображения */
-		$result = LoadFile::sendData($server, LoadFile::getImage($image_path));
+		$result = LoadFile::sendImage($server, $image_path);
 
 		/** temp */
 		$result = preg_split('/\n/',$result);
 
 		$photo_server_json = json_decode($result[count($result)-1]);
-        /** В случае неудачной отправки */
+		/** В случае неудачной отправки */
 
 
-        if(isset($photo_server_json->error))
-            throw new RequestError(__FILE__." : ".__LINE__.$photo_server_json->error,$photo_server_json->error->error_code);
+		if (isset($photo_server_json->error))
+			throw new RequestError(__FILE__ . " : " . __LINE__ . $photo_server_json->error, $photo_server_json->error->error_code);
 
 		/** @var  $photo_save array параметры для сохранения фото на сервере */
-        $photo_save = array(
-            "server" => $photo_server_json->server,
-            "hash" => $photo_server_json->hash,
+		$photo_save = array(
+			"server" => $photo_server_json->server,
+			"hash" => $photo_server_json->hash,
 			"photo" =>$photo_server_json->photo
-            );
-        $photo_save = self::setVersionAndToken($photo_save);
+		);
+		$photo_save = self::setVersionAndToken($photo_save);
 
 		/** @var array $result Получение id и других параметров изображения на сервере VK */
-        $result = json_decode(file_get_contents('https://api.vk.com/method/photos.saveMessagesPhoto?' . http_build_query($photo_save)));
-        /** В случае если произошла ошибка */
-        if (isset($result->error))
-           throw new RequestError(__FILE__." : ".__LINE__.$result->error->error_msg,$result->error->error_code);
+		$result = json_decode(file_get_contents('https://api.vk.com/method/photos.saveMessagesPhoto?' . http_build_query($photo_save)));
+		/** В случае если произошла ошибка */
+		if (isset($result->error))
+			throw new RequestError(__FILE__ . " : " . __LINE__ . $result->error->error_msg, $result->error->error_code);
 
 		/** @var array $result */
 		if (isset($result->response[0])) {
 			$result = $result->response[0];
 		}
 
-        return $result;
-    }
+		return "photo" . $result->owner_id . "_" . $result->id;
+	}
 
 	/**
 	 * @param $user_id string -  id пользователя
 	 * @param $document_path string - url к документу
-	 * @return array[]|false|mixed|string|string[] - возвращает информацию о документе
-	 * @throws RequestError в случае ошибок при запросе к вк API
-	 * @throws \Exception - в случае отсутсвие файла
+	 * @param $title string - названия документа для VK
+	 * @param $tags string - список тегов для VK
+	 * @return array[]|false|mixed|string|string[] - возвращает параметр attachment для messageSend и других ....
+	 *     * @throws RequestError в случае ошибок при запросе к вк API
+	 * @throws \Exception - в случае отсутствия файла
 	 */
-	static public function documentAttachmentMessageSend($user_id, $document_path) {
+	static public function documentAttachmentMessageSend($user_id, $document_path, $title, $tags) {
 
 		/** @var  $request_params - array параметров к запросу .... */
 		$request_params = array("peer_id" => $user_id, "type" => "doc");
@@ -120,19 +123,22 @@ class Api {
 		/** @var  $server - сервер загрузки изображения */
 		$server = parse_url($result->response->upload_url);
 
-		/** @var $result - содержит ответ сервера на загрузку изображения */
-		$result = LoadFile::sendData($server, LoadFile::getDocument($document_path));
+		/** @var $result - содержит ответ сервера на загрузку документа */
+		$result = LoadFile::sendDocument($server, $document_path);
 
 		/** temp */
 		$result = preg_split('/\n/', $result);
 		$document_server_json = json_decode($result[count($result) - 1]);
+		/** end temp */
+
 		if (isset($document_server_json->error))
 			throw new RequestError(__FILE__ . " : " . __LINE__ . $document_server_json->error, $document_server_json->error->error_code);
+
 		/** @var array $document_save - параметры для сохранения документа */
 		$document_save = array(
 			"file" => $document_server_json->file,
-			"title" => "Задание",
-			"tags" => "персональный бот"
+			"title" => $title,
+			"tags" => $tags
 		);
 		$document_save = self::setVersionAndToken($document_save);
 		$result = json_decode(file_get_contents('https://api.vk.com/method/docs.save?' . http_build_query($document_save)));
@@ -142,8 +148,9 @@ class Api {
 		if (isset($result->response[0])) {
 			$result = $result->response[0];
 		}
-		return $result;
 
+
+		return "doc" . $result->owner_id . "_" . $result->id;
 
 	}
 	/**
@@ -232,7 +239,7 @@ class Api {
 
 /*
  * Класс исключения для работы с вк api
- * обработка кодов возврата в случае неудачи
+ * обработка кодов возврата в случае неудачи при использований VK_API
  */
 
 class RequestError extends \Exception {

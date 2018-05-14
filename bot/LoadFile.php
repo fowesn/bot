@@ -15,12 +15,12 @@ class LoadFile {
 	 * @return array
 	 * @throws \Exception
 	 */
-	static public function getImage($photo_path) {
+	static private function getImage($photo_path) {
 		ini_set("allow_url_fopen",true);
 		/** @var  $type string - формат изображения */
 		$type = exif_imagetype($photo_path);
 		if($type == false)
-			throw new \Exception(__FILE__ . " : " . __LINE__ . " File not found " . $photo_path);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " File not found or not Image" . $photo_path);
 		/** @var  $mimeType string mime тип изображения для запроса */
 		$mimeType = image_type_to_mime_type($type);
 
@@ -48,7 +48,7 @@ class LoadFile {
 	 * @return array - документ
 	 * @throws \Exception - в случае отсутвие файла
 	 */
-	public static function getDocument($document_path) {
+	private static function getDocument($document_path) {
 		ini_set("allow_url_fopen", true);
 		if (!fopen($document_path, "r"))
 			throw new \Exception(__FILE__ . " : " . __LINE__ . "File not found " . $document_path);
@@ -77,10 +77,9 @@ class LoadFile {
 	 * @return string
 	 * @throws \Exception
 	 */
-	public static function sendData($server, $data) {
+	private static function sendData($server, $data) {
 		/** https */
 		$fp = fsockopen("ssl://" . $server["host"], 443, $errno, $errstr, 5);
-
 		if (!$fp)
 			throw new RequestError(__FILE__ . ":" . __LINE__ . "проблемы с сокетом" . $server["host"]);
 		/** @var string разделитель полей на сокете $boundary */
@@ -99,11 +98,34 @@ class LoadFile {
 		fwrite($fp, 'Content-Length: ' . strlen($content) . "\r\n\r\n");
 		fwrite($fp, $content);
 		$result = '';
-		while (!feof($fp)) $result .= fgets($fp, 10);
+		stream_set_timeout($fp, 1);
+		while (strlen($buf = fread($fp, 10)) > 0) {
+			$result .= $buf;
+		}
 		// закрываем соединение
 		fclose($fp);
+
 		return $result;
 	}
+	///////////////////////ФАСАД////////////////////
 
+	/**
+	 * @param $server array - url parse
+	 * @param $document_path string
+	 * @return string http response
+	 * @throws \Exception - отсутсвие файла
+	 */
+	public static function sendDocument($server, $document_path) {
+		return self::sendData($server, self::getDocument($document_path));
+	}
 
+	/**
+	 * @param $server array - url parse
+	 * @param $photo_path string - url to file
+	 * @return string http response
+	 * @throws \Exception
+	 */
+	public static function sendImage($server, $photo_path) {
+		return self::sendData($server, self::getImage($photo_path));
+	}
 }
