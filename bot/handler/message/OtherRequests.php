@@ -26,7 +26,7 @@ class OtherRequests
                 //если ошибок нет
                 $message = "У меня есть задания по следующим темам:\r\n\r\n";
                 foreach ($result->data as $theme)
-                    $message .= str_replace("_", " ", $theme) . "\r\n";
+                    $message .= $theme . "\r\n";
             }
             $message .= "\r\n\r\nЧтобы получить задание по одной из тем, напиши мне \"задание <название темы>\".";
         }

@@ -12,7 +12,7 @@ class Task
     private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/problems/problem?';
     public static function getRandomTaskMessage($userId)
     {
-        //формирование параметров запроса к апи
+        /*//формирование параметров запроса к апи
         $params = array("type" => "random", "user_id" => $userId, "service" => "vk");
         $request_params = http_build_query($params);
 
@@ -61,100 +61,77 @@ class Task
                     default:
                         break;
                 }
-        }
-        return array("user_id" => $userId, "message" => $message);
+        }*/
+
+        return self::getTask("random", $userId); //array("user_id" => $userId, "message" => $message);
     }
     public static function getThemeTaskMessage($userId, $theme) {
-        //формирование параметров запроса к апи
-        $params = array("type" => $theme, "user_id" => $userId, "service" => "vk");
-        $request_params = http_build_query($params);
 
-        //проверка кодов http
-        $code = substr(get_headers(self::$url . $request_params)[0], 9, 3);
-        if ($code != 200) {
-            $message = $code . " " . self::$server_error_message . "\r\n\r\n";
-            return array("user_id" => $userId, "message" => $message);
-        }
-        $result = json_decode(file_get_contents(self::$url . $request_params));
-        //ошибки пользователя
-        if ($result->success !== "true") {
-            $message = $result->error->message;
-        }
-        else {
-            // если ошибок нет, то собирается сбщ с заданием
-            $message = "Задание номер " . $userId ^ $result->problem . ".\r\n\r\n";
-
-            // куча напоминаний о том, как прислать ответ и попросить разбор
-            $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $userId ^ $result->problem . "\".\r\n" .
-                "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор" . $userId ^ $result->problem . "\".\r\n" .
-                "Если ты хочешь узнать правильный ответ, напиши \"ответ" . $userId ^ $result->problem . "\".\r\n\r\n";
-            for ($i = 0; $i < count($result->data); $i++)
-                switch ($result->data[$i]->type) {
-                    case 'pdf':
-                        // тут нужен attachment документа
-                        break;
-                    case 'image':
-                        // attachment изображения
-                        break;
-                    case 'link':
-                        $message .= $result->data[$i]->resource_content . "\r\n\r\n";
-                        break;
-                    case 'text':
-                        $message .= $result->data[$i]->resource_content;
-                        break;
-                    default:
-                        break;
-                }
-        }
-        return array("user_id" => $userId, "message" => $message);
+        return self::getTask($theme, $userId);
     }
     public static function getKIMTaskMessage($userId, $KIMid) {
         if($KIMid > 23 || $KIMid < 1) {
             $message = "Похоже, что номер задания указан неверно. Учти, что я могу дать тебе только задания с номерами от 1 до 23.";
             return array("user_id" => $userId, "message" => $message);
         }
-        //формирование параметров запроса к апи
-        $params = array("type" => $KIMid, "user_id" => $userId, "service" => "vk");
+
+        return self::getTask($KIMid, $userId);
+    }
+
+    private static function getTask($type, $userId)
+    {
+        $params = array("type" => $type, "user_id" => $userId, "service" => "vk");
         $request_params = http_build_query($params);
 
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, self::$url . $request_params);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $result = curl_exec($ch);
+        $result = json_decode($result);
         //проверка кодов http
-        $code = substr(get_headers(self::$url . $request_params)[0], 9, 3);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($code != 200) {
-            $message = $code . " " . self::$server_error_message . "\r\n\r\n";
+            $message = $code . ". " . self::$server_error_message;
             return array("user_id" => $userId, "message" => $message);
         }
 
-        $result = json_decode(file_get_contents(self::$url . $request_params));
+
         //ошибки пользователя
         if ($result->success !== "true") {
             $message = $result->error->message;
         }
         else {
-            // если ошибок нет, то собирается сбщ с заданием
-            $message = "Задание номер " . $userId ^ $result->problem . ".\r\n\r\n";
 
+            // если ошибок нет, то собирается сбщ с заданием
+            $uniqueNumber = ((int)$userId) ^ (int)($result->problem);
+            $message = "Задание номер " . $uniqueNumber . ".\r\n\r\n";
             // куча напоминаний о том, как прислать ответ и попросить разбор
-            $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $userId ^ $result->problem . "\".\r\n" .
-                "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор" . $userId ^ $result->problem . "\".\r\n" .
-                "Если ты хочешь узнать правильный ответ, напиши \"ответ" . $userId ^ $result->problem . "\".\r\n\r\n";
+            $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $uniqueNumber . " <ответ>\".\r\n" .
+                "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор " . $uniqueNumber . "\".\r\n" .
+                "Если ты хочешь узнать правильный ответ, напиши \"ответ " . $uniqueNumber . "\".\r\n\r\n";
             for ($i = 0; $i < count($result->data); $i++)
                 switch ($result->data[$i]->type) {
-                    case 'pdf':
+                    case 'pdf-файл':
                         // тут нужен attachment документа
+                        $attachment = \api\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content);
                         break;
-                    case 'image':
+                    case 'изображение':
                         // attachment изображения
+                        $attachment = \api\Api::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
                         break;
-                    case 'link':
-                        $message .= $result->data[$i]->resource_content . "\r\n\r\n";
+                    case 'ссылка':
+                        $message .= $result->data[$i]->content;
                         break;
-                    case 'text':
-                        $message .= $result->data[$i]->resource_content;
+                    case 'текст':
+                        $message .= $result->data[$i]->content;
                         break;
                     default:
                         break;
                 }
         }
-        return array("user_id" => $userId, "message" => $message);
+        if(isset($attachment))
+            return array("user_id" => $userId, "message" => $message, "attachment" => $attachment);
+        else
+            return array("user_id" => $userId, "message" => $message);
     }
 }

@@ -37,11 +37,10 @@ class message_new
         switch ( $user_message[0] )
         {
             case 'фото':
-				$result = \api\Api::pictureAttachmentMessageSend($data->object->user_id,'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
-				$photo = "photo".$result->owner_id."_".$result->id;
-//				throw new \api\RequestError($photo);
-                \api\Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу","attachment" => $photo));
+                $result = \api\Api::pictureAttachmentMessageSend($data->object->user_id,'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
 
+//				$result = \api\Api::documentAttachmentMessageSend($data->object->user_id,"https://www.cryptopro.ru/sites/default/files/products/pdf/files/CryptoProPDF_UserGuide.pdf");
+                \api\Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу","attachment" => $result));
                 break;
             case 'помощь':
                 if(count($user_message) > 1)
@@ -105,9 +104,11 @@ class message_new
                 break;
             default:
                 if (preg_match("/^\d+$/", $user_message[0]))
-                    //$user_message[1] - ответ
-                    //модуль проверки ответа, передать user_message[1]
-                    ;
+                    if(count($user_message) != 2)
+                        \api\Api::messageSend(array("user_id" => $data->object->user_id,
+                                                    "message" => \UnidentifiedPartialRequests::check()));
+                    else
+                        \api\Api::messageSend(\Answer::checkUserAnswer($data->object->user_id, $user_message[0], $user_message[1]));
                 else
                     \api\Api::messageSend(array("user_id" => $data->object->user_id,
                                                 "message" => \OtherRequests::getBasicMessage()));
