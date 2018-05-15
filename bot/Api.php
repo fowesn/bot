@@ -110,7 +110,7 @@ class Api {
 	 *     * @throws RequestError в случае ошибок при запросе к вк API
 	 * @throws \Exception - в случае отсутствия файла
 	 */
-	static public function documentAttachmentMessageSend($user_id, $document_path, $title, $tags) {
+	static public function documentAttachmentMessageSend($user_id, $document_path, $title=null, $tags=null) {
 
 		/** @var  $request_params - array параметров к запросу .... */
 		$request_params = array("peer_id" => $user_id, "type" => "doc");
