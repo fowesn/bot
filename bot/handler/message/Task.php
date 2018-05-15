@@ -6,18 +6,42 @@
  * Time: 14:39
  */
 include_once "../../../setting.php";
+
 class Task
 {
     private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
     private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/problems/problem?';
+
+    /**
+     * @param $userId
+     * @return array
+     * @throws Exception
+     * @throws \api\RequestError
+     */
     public static function getRandomTaskMessage($userId)
     {
-        return self::getTask("random", $userId); //array("user_id" => $userId, "message" => $message);
+        return self::getTask("random", $userId);
     }
+
+    /**
+     * @param $userId
+     * @param $theme
+     * @return array
+     * @throws Exception
+     * @throws \api\RequestError
+     */
     public static function getThemeTaskMessage($userId, $theme) {
 
         return self::getTask($theme, $userId);
     }
+
+    /**
+     * @param $userId
+     * @param $KIMid
+     * @return array
+     * @throws Exception
+     * @throws \api\RequestError
+     */
     public static function getKIMTaskMessage($userId, $KIMid) {
         if($KIMid > 23 || $KIMid < 1) {
             $message = "Похоже, что номер задания указан неверно. Учти, что я могу дать тебе только задания с номерами от 1 до 23.";
@@ -70,7 +94,8 @@ class Task
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
                         // тут нужен attachment документа
-                        $attachment = \api\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content, $result->data[$i]->name, "бот по информатике");
+                        $attachment = \api\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content,
+                                                                        "задание " . $uniqueNumber, "бот по информатике");
                         break;
                     case 'изображение':
                         // attachment изображения
