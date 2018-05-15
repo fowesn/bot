@@ -18,14 +18,9 @@ class checkAnswer
     {
         $conn = dbConnection::getConnection();
 
-        if ($assignment_id === null || !is_numeric($assignment_id))
-        {
-            throw new Exception("Invalid parameter: assignment_id is " . ($assignment_id === null ? "NULL" : $assignment_id) . "; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
-        }
-
         if ($answer === null)
         {
-            throw new Exception("Invalid parameter: answer is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: answer is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('SELECT problem_id FROM assignment WHERE assignment_id = ?');
@@ -34,19 +29,22 @@ class checkAnswer
         
         if ($problem_id === null)
         {
-            throw new Exception("Invalid parameter: assignment_id " . $assignment_id . " not found in 'assignment'; Method: " . __METHOD__  . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: assignment_id ' . $assignment_id . ' not found in \'assignment\'; Method: ' . __METHOD__  . '; line: ' . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('SELECT problem_answer FROM problem WHERE problem_id = ?');
         $stmt->execute(array($problem_id));
-        $correct_answer = $stmt->fetch()['problem_answer'];
 
-        if ($correct_answer === $answer)
+        if ($stmt->fetch()['problem_answer'] === $answer)
         {
             $stmt = $conn->prepare('UPDATE assignment SET correct_answer_provided = 1 WHERE assignment_id = ?');
             $stmt->execute(array($assignment_id));
+            
+            $conn = null;
             return true;
         }
+        
+        $conn = null;
         return false;
 
     }

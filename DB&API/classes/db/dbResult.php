@@ -19,14 +19,14 @@ class dbResult
     {
         $conn = dbConnection::getConnection();
 
-        if ($user_id === null)
+        if ($user_id === null || !is_numeric($user_id))
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: user_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
-        if ($problem_id === null)
+        if ($problem_id === null || !is_numeric($problem_id))
         {
-            throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: problem_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         // User can't get correct answer of the task he wasn't assigned to
@@ -34,13 +34,15 @@ class dbResult
         $stmt->execute(array($problem_id, $user_id));
         if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
         {
-            throw new UserExceptions("Вы не получали задания, для которого просите правильный ответ!", 4);
+            throw new UserExceptions('Вы не получали задания, для которого просите правильный ответ!', 4);
         }
 
         $stmt = $conn->prepare('SELECT problem_answer FROM problem WHERE problem_id = ?');
         $stmt->execute(array($problem_id));
-
-        return $stmt->fetch()['problem_answer'];
+        $answer = $stmt->fetch()['problem_answer'];
+        
+        $conn = null;
+        return $answer;
     }
 
     /**
@@ -54,14 +56,14 @@ class dbResult
     {
         $conn = dbConnection::getConnection();
 
-        if ($user_id === null)
+        if ($user_id === null || !is_numeric($user_id))
         {
-            throw new Exception("Invalid parameter: user_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: user_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
-        if ($problem_id === null)
+        if ($problem_id === null || !is_numeric($problem_id))
         {
-            throw new Exception("Invalid parameter: problem_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: problem_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         // User can't get solution of the task he wasn't assigned to
@@ -69,7 +71,7 @@ class dbResult
         $stmt->execute(array($problem_id, $user_id));
         if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
         {
-            throw new UserExceptions("Вы не получали задания, для которого просите разбор!", 4);
+            throw new UserExceptions('Вы не получали задания, для которого просите разбор!', 4);
         }
 
         $stmt = $conn->prepare('SELECT problem_solution FROM problem WHERE problem_id = ?');

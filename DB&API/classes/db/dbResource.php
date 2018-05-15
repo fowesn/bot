@@ -20,6 +20,8 @@ class dbResource
         {
             $resources[] = $row['resource_type_code'];
         }
+        
+        $conn = null;
         return $resources;
     }
 
@@ -32,50 +34,43 @@ class dbResource
     public static function getPreferredResource ($user_id, $resource_collection_id)
     {
         $conn = dbConnection::getConnection();
-
-        $stmt = $conn->prepare('SELECT user_id FROM user WHERE user_id = ?');
-        $stmt->execute(array($user_id));
-        if (empty($stmt->fetch()['user_id']))
-        {
-          throw new Exception ("Invalid parameter: user_id " . ($user_id === null ? "NULL" : $user_id) . " not found in 'user'; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
-        }
-
-/*
-        if ($resource_collection_id === null)
-        {
-            throw new Exception("Invalid parameter: resource_collection_id is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
-        }
-        */
-        
+                
         $stmt = $conn->prepare('SELECT resource_collection_id FROM resource_collection WHERE resource_collection_id = ?');
         $stmt->execute(array($resource_collection_id));
         if (empty($stmt->fetch()['resource_collection_id']))
         {
-          throw new Exception ("Invalid parameter: resource_collection_id " . ($resource_collection_id === null ? "NULL" : $resource_collection_id) . " not found in 'resource_collection'; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+          throw new Exception ('Invalid parameter: resource_collection_id ' . ($resource_collection_id === null ? 'NULL' : $resource_collection_id) . ' not found in \'resource_collection\'; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         $stmt = $conn->prepare('SELECT preferred_resource_type FROM user WHERE user_id = ?');
         $stmt->execute(array($user_id));
         $pref = $stmt->fetch()['preferred_resource_type'];
+        
+        if ($pref === null) 
+        {
+          throw new Exception ('Invalid parameter: user_id ' . ($user_id === null ? 'NULL' : $user_id) . ' not found in \'user\'; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+        }
 
-        $stmt = $conn->prepare('SELECT resource.resource_name AS Name, resource_type.resource_type_code AS Type, resource.resource_content AS Content 
-                                FROM resource, resource_type 
-                                WHERE (resource.resource_collection_id = ? 
-                                AND resource.resource_type_id = ? 
-                                AND resource_type.resource_type_id = resource.resource_type_id)');
+        $stmt = $conn->prepare('SELECT resource.resource_name AS name, resource_type.resource_type_code AS type, resource.resource_content AS content 
+                                FROM resource
+                                INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
+                                WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
         $stmt->execute(array($resource_collection_id, $pref));
+        unset($pref);
         $resources = array();
         while ($row = $stmt->fetch())
         {
             $resources[] = $row;
         }
+        unset ($row);
 
 //        // There can be no resources preferred by user in the collection, remember that!
 //        if (empty($row))
 //        {
 //            /** @throws  ?Exception  Records with specified resource_type_code does not exist */
 //        }
-
+             
+        $conn = null;
         return $resources;
     }
 
@@ -94,13 +89,13 @@ class dbResource
         $stmt->execute(array($user_id));
         if (empty($stmt->fetch()['user_id']))
         {
-          throw new Exception ("Invalid parameter: user_id " . ($user_id === null ? "NULL" : $user_id) . " not found in 'user'; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+          throw new Exception ('Invalid parameter: user_id ' . ($user_id === null ? 'NULL' : $user_id) . ' not found in \'user\'; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         
         if ($resource_type_code === null)
         {
-            throw new Exception("Invalid parameter: resource_type_code is NULL; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: resource_type_code is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }   
             
 
@@ -110,11 +105,13 @@ class dbResource
         // Resources with stated type does not exist
         if (empty($resource_type_id = $stmt->fetch()['resource_type_id']))
         {
-            throw new UserExceptions("Такого вида ресурса у нас нет :(", 5);
+            throw new UserExceptions('Такого вида ресурса у нас нет :(', 5);
         }
 
         $stmt = $conn->prepare('UPDATE user SET preferred_resource_type = ? WHERE user_id = ?');
         $stmt->execute(array($resource_type_id, $user_id));
+        
+        $conn = null;
         return true;
 
     }

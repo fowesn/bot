@@ -20,6 +20,8 @@ class dbMisc
         {
             $resources[] = $row['problem_type_code'];
         }
+        
+        $conn = null;
         return $resources;
     }
 
@@ -32,22 +34,24 @@ class dbMisc
     public static function getGlobalUserId ($user_id, $service)
     {
         $conn = dbConnection::getConnection();
+        
         $columns = array('vk' => 'user_vk_id', 'tg' => 'user_tg_id');
 
         if ($user_id === null || !is_numeric($user_id))
         {
-            throw new Exception("Invalid parameter: user_id " . ($user_id === null ? "NULL" : $user_id) . "; Method: " . __METHOD__ . "; line: " . __LINE__, 500);
+            throw new Exception('Invalid parameter: user_id ' . ($user_id === null ? 'NULL' : $user_id) . '; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         // Check whether the stated service exists
         if (!isset($columns[$service]))
         {
-            throw new Exception("Platform " . $service . " is not supported",404);
+            throw new Exception('Platform ' . $service . ' is not supported', 404);
         }
 
         $query = 'SELECT user_id FROM user WHERE ' . $columns[$service] . ' = ?';
         $stmt = $conn->prepare($query);
         $stmt->execute(array($user_id));
+        unset($query);
 
         // Register the user, if the stated user_id does not exist
         // Otherwise return "global" user_id
