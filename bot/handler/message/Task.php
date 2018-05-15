@@ -94,12 +94,12 @@ class Task
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
                         // тут нужен attachment документа
-                        $attachment = \api\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content,
-                                                                        "задание " . $uniqueNumber, "бот по информатике");
+                        $attachment = \api\Api::documentAttachmentMessageSend($userId, $result->data[$i]->content,
+                            "задание " . $uniqueNumber, "бот по информатике");
                         break;
                     case 'изображение':
                         // attachment изображения
-                        $attachment = \api\Api::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
+                        $attachment = \api\Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
                         break;
                     case 'ссылка':
                         $message .= $result->data[$i]->content;

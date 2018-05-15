@@ -102,13 +102,18 @@ class message_new
                 else
                     \api\Api::messageSend(\Answer::getAnswer($data->object->user_id, $user_message[1]));
                 break;
+            case 'привет':
+                \api\Api::messageSend(array("user_id" => $data->object->user_id,
+                                            "message" => \UnidentifiedPartialRequests::hello()));
+                break;
             default:
-                if (preg_match("/^\d+$/", $user_message[0]))
-                    if(count($user_message) != 2)
+                if (preg_match("/^\d+$/", $user_message[0])) {
+                    if (count($user_message) != 2)
                         \api\Api::messageSend(array("user_id" => $data->object->user_id,
                                                     "message" => \UnidentifiedPartialRequests::check()));
                     else
                         \api\Api::messageSend(\Answer::checkUserAnswer($data->object->user_id, $user_message[0], $user_message[1]));
+                }
                 else
                     \api\Api::messageSend(array("user_id" => $data->object->user_id,
                                                 "message" => \OtherRequests::getBasicMessage()));

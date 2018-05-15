@@ -74,6 +74,7 @@ class Answer
         }
         else {
             // если ошибок нет, то собирается сбщ с разбором
+            $message = "";
             for ($i = 0; $i < count($result->data); $i++)
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
@@ -113,21 +114,22 @@ class Answer
         $task = (int)$userId ^ (int)$taskId;
         $params = array("problem_id" => $task, "answer" => $answer, "user_id" => $userId, "service" => "vk");
         $request_params = http_build_query($params);
+        //$message = self::$url . "answer?" . $request_params;
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
+        curl_setopt($ch, CURLOPT_URL, self::$url . 'answer');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, self::$url . "answer?" . $request_params);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $request_params);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $result= json_decode(curl_exec($ch));
+        $result = json_decode(curl_exec($ch));
         curl_close($ch);
 
         //проверка кодов http
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($code != 200) {
-            $message = $code . ". " . self::$server_error_message;
-            return array("user_id" => $userId, "message" => $message);
-        }
+//        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+//        if ($code !== 200) {
+//            $message = $code . ". " . self::$server_error_message;
+//            return array("user_id" => $userId, "message" => $message);
+//        }
 
         //ошибки пользователя
         if ($result->success !== "true") {
@@ -135,7 +137,7 @@ class Answer
         }
         else {
             // если ошибок нет, то собирается сообщение с результатом проверки ответа пользователя
-            $message = $result->answer;
+            $message = (bool)($result->result) ? "Верно" : "Неверно";
         }
         return array("user_id" => $userId, "message" => $message);
 
