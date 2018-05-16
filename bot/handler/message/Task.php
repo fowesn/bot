@@ -5,7 +5,8 @@
  * Date: 13.04.2018
  * Time: 14:39
  */
-include_once "../../../setting.php";
+
+namespace api\handler\message;
 
 class Task
 {
@@ -23,13 +24,13 @@ class Task
         return self::getTask("random", $userId);
     }
 
-    /**
-     * @param $userId
-     * @param $theme
-     * @return array
-     * @throws Exception
-     * @throws \api\RequestError
-     */
+	/**
+	 * @param $userId
+	 * @param $theme
+	 * @return array
+	 * @throws \Exception
+	 * @throws \api\RequestError
+	 */
     public static function getThemeTaskMessage($userId, $theme) {
 
         return self::getTask($theme, $userId);
@@ -39,7 +40,7 @@ class Task
      * @param $userId
      * @param $KIMid
      * @return array
-     * @throws Exception
+	 * @throws \Exception
      * @throws \api\RequestError
      */
     public static function getKIMTaskMessage($userId, $KIMid) {
@@ -51,13 +52,14 @@ class Task
         return self::getTask($KIMid, $userId);
     }
 
-    /**
-     * @param $type - тип запроса задания к апи
-     * @param $userId - ид пользователя
-     * @return array - параметры запроса к вк апи
-     * @throws Exception - ошибки работы функции
-     * @throws \api\RequestError - ошибки запроса при обращении к вк апи
-     */
+	/**
+	 * @param $type - тип запроса задания к апи
+	 * @param $userId - ид пользователя
+	 * @return array - параметры запроса к вк апи
+	 * @throws Exception - ошибки работы функции
+	 * @throws \api\RequestError - ошибки запроса при обращении к вк апи
+	 * @throws \Exception
+	 */
     private static function getTask($type, $userId)
     {
 

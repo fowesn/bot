@@ -5,7 +5,8 @@
  * Date: 08.03.18
  * Time: 15:52
  */
-include_once "iHandler.php";
+
+namespace api\handler;
 
 class confirmation {
 

@@ -8,14 +8,12 @@
 
 namespace api;
 
-include_once "handler/message_new.php";
-include_once "handler/confirmation.php";
 
 /**
  * Class CallbackApi Реализует распределение запросов событий по модулям обработки.
  * @package api
  * @author kurenchuksergey
- * @version 0.1
+ * @version 0.2
  */
 class CallbackApi {
 	/**
@@ -35,17 +33,17 @@ class CallbackApi {
 		//echo var_dump($data);
 		if (!isset($data->type)) {
 
-				throw new \Exception(__FILE__ . " : " . __LINE__ . " Нет типа события");
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " Нет типа события");
 		}
 
 		if (!isset($data->secret) or $data->secret != SECRET_KEY)
 			throw new SecurityBreach("Ключ не соответствует");
 
 
-		if (class_exists($data->type, false)) {
-			return call_user_func($data->type . "::run", $data);
+		if (class_exists('\\api\\handler\\' . $data->type, true)) {
+			return call_user_func('\\api\\handler\\' . $data->type . "::run", $data);
 		} else
-			throw new \Exception("Обработчика события " . $data->type . " нет в " . __NAMESPACE__ . "\\handler\\" . $data->type);
+			throw new EventNotSupported("Обработчика события " . $data->type . " нет в " . __NAMESPACE__ . "\\handler\\" . $data->type);
 
 
 	}

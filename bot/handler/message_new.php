@@ -5,18 +5,19 @@
  * Date: 13.04.2018
  * Time: 17:48
  */
-include_once "message/Task.php";
-include_once "message/Answer.php";
-include_once "message/OtherRequests.php";
-include_once "message/UnidentifiedPartialRequests.php";
+
+namespace api\handler;
+
+use api\Api;
+use api\handler\message as message;
 
 class message_new
 {
-    /**
-     * @param $data
-     * @throws Exception
-     * @throws \api\RequestError
-     */
+	/**
+	 * @param $data
+	 * @throws \Exception
+	 * @throws \api\RequestError
+	 */
 
     public static function run ( $data )
     {
@@ -37,86 +38,85 @@ class message_new
         switch ( $user_message[0] )
         {
             case 'фото':
-                $result = \api\Api::pictureAttachmentMessageSend($data->object->user_id,'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+				$result = Api::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
 
 //				$result = \api\Api::documentAttachmentMessageSend($data->object->user_id,"https://www.cryptopro.ru/sites/default/files/products/pdf/files/CryptoProPDF_UserGuide.pdf");
-                \api\Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу","attachment" => $result));
+				Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу", "attachment" => $result));
                 break;
             case 'помощь':
                 if(count($user_message) > 1)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::help()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::help()));
                 else {
-                    $message = \OtherRequests::GetHelpMessage();
+					$message = message\OtherRequests::GetHelpMessage();
                     for($i = 0; $i < count($message); $i++)
-                        \api\Api::messageSend(array("user_id" => $data->object->user_id,
+						Api::messageSend(array("user_id" => $data->object->user_id,
                                                     "message" => $message[$i]));
                 }
                 break;
             case 'темы':
                 if(count($user_message) > 1)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                        "message" => \UnidentifiedPartialRequests::themes()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::themes()));
                 else
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \OtherRequests::getThemesList()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\OtherRequests::getThemesList()));
                 break;
             case 'задание':
                 if(count($user_message) > 2)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::tasks()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::tasks()));
                 else if(count($user_message) == 2) {
                     if (preg_match("/^\d+$/", $user_message[1]))
-                        \api\Api::messageSend(\Task::getKIMTaskMessage($data->object->user_id, $user_message[1]));
+						Api::messageSend(message\Task::getKIMTaskMessage($data->object->user_id, $user_message[1]));
                     else
-                        \api\Api::messageSend(\Task::getThemeTaskMessage($data->object->user_id, $user_message[1]));
-                }
-                else \api\Api::messageSend(\Task::getRandomTaskMessage($data->object->user_id));
+						Api::messageSend(message\Task::getThemeTaskMessage($data->object->user_id, $user_message[1]));
+				} else Api::messageSend(message\Task::getRandomTaskMessage($data->object->user_id));
                 break;
             case 'разбор':
                 if(count($user_message) != 2)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::anasysis()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::anasysis()));
                 else
-                    \api\Api::messageSend(\Answer::getAnalysis($data->object->user_id, $user_message[1]));
+					Api::messageSend(message\Answer::getAnalysis($data->object->user_id, $user_message[1]));
                 break;
             case 'ресурсы':
                 if(count($user_message) > 1)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::resources()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::resources()));
                 else
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \OtherRequests::getResourceTypesList()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\OtherRequests::getResourceTypesList()));
                 break;
             case 'ресурс':
                 if(count($user_message) != 2)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::resource()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::resource()));
                 else
-                    \api\Api::messageSend(\OtherRequests::setUserPreferredResource($data->object->user_id, $user_message[1]));
+					Api::messageSend(message\OtherRequests::setUserPreferredResource($data->object->user_id, $user_message[1]));
                 break;
             case 'ответ':
                 if(count($user_message) != 2)
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \UnidentifiedPartialRequests::answer()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\UnidentifiedPartialRequests::answer()));
                 else
-                    \api\Api::messageSend(\Answer::getAnswer($data->object->user_id, $user_message[1]));
+					Api::messageSend(message\Answer::getAnswer($data->object->user_id, $user_message[1]));
                 break;
             case 'привет':
-                \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                            "message" => \UnidentifiedPartialRequests::hello()));
+				Api::messageSend(array("user_id" => $data->object->user_id,
+					"message" => message\UnidentifiedPartialRequests::hello()));
                 break;
             default:
                 if (preg_match("/^\d+$/", $user_message[0])) {
                     if (count($user_message) != 2)
-                        \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                    "message" => \UnidentifiedPartialRequests::check()));
+						Api::messageSend(array("user_id" => $data->object->user_id,
+							"message" => message\UnidentifiedPartialRequests::check()));
                     else
-                        \api\Api::messageSend(\Answer::checkUserAnswer($data->object->user_id, $user_message[0], $user_message[1]));
+						Api::messageSend(message\Answer::checkUserAnswer($data->object->user_id, $user_message[0], $user_message[1]));
                 }
                 else
-                    \api\Api::messageSend(array("user_id" => $data->object->user_id,
-                                                "message" => \OtherRequests::getBasicMessage()));
+					Api::messageSend(array("user_id" => $data->object->user_id,
+						"message" => message\OtherRequests::getBasicMessage()));
                 break;
         }
     }

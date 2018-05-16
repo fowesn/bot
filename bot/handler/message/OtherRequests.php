@@ -6,7 +6,7 @@
  * Time: 14:39
  */
 
-
+namespace api\handler\message;
 class OtherRequests
 {
     private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
