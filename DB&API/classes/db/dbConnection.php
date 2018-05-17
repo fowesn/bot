@@ -11,6 +11,7 @@ class dbConnection
     private static $conn;
     private function __construct()
     {
+	//$time = microtime();
         /** @var string hostname */
         $host = DB_HOST;
         /** @var string database username */
@@ -27,7 +28,7 @@ class dbConnection
             $options = [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-				PDO::ATTR_PERSISTENT         => true,
+		PDO::ATTR_PERSISTENT         => true,
             ];
             // Create a new PDO connection
             $connection = new PDO($dsn, $user, $pass, $options);
@@ -39,7 +40,13 @@ class dbConnection
             //echo($e->getCode() . " " . $e->getMessage());
             throw $e;
         }
+/*
+	finally
+	{
+	    file_put_contents("../logs/app.log", (microtime() - $time) . "\n", FILE_APPEND);
 	}
+*/
+    }
 
     /**
      * Create connection if it does not exist

@@ -21,12 +21,12 @@ class dbResult
 
         if ($user_id === null || !is_numeric($user_id))
         {
-            throw new Exception('Invalid parameter: user_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+            throw new Exception('Invalid parameter: user_id is ' . ($user_id === null ? 'NULL' : $user_id) . '; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         if ($problem_id === null || !is_numeric($problem_id))
         {
-            throw new Exception('Invalid parameter: problem_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+            throw new Exception('Invalid parameter: problem_id is ' . ($problem_id === null ? 'NULL' : $problem_id) . '; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);            
         }
 
         // User can't get correct answer of the task he wasn't assigned to
@@ -58,12 +58,12 @@ class dbResult
 
         if ($user_id === null || !is_numeric($user_id))
         {
-            throw new Exception('Invalid parameter: user_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+            throw new Exception('Invalid parameter: user_id is ' . ($user_id === null ? 'NULL' : $user_id) . '; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         if ($problem_id === null || !is_numeric($problem_id))
         {
-            throw new Exception('Invalid parameter: problem_id is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+            throw new Exception('Invalid parameter: problem_id is ' . ($problem_id === null ? 'NULL' : $problem_id) . '; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
         }
 
         // User can't get solution of the task he wasn't assigned to

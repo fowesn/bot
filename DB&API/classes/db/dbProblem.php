@@ -67,11 +67,11 @@ class dbProblem
     public static function getProblemByType ($user_id, $problem_type_code)
     {
         $conn = dbConnection::getConnection();
-
+        
         if ($problem_type_code === null)
         {
             throw new Exception('Invalid parameter: problem_type is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
-        }
+        }        
 
         // Check whether the stated user exists
         $user_check = $conn->prepare('SELECT user_id FROM user WHERE user_id  = ?');
@@ -98,7 +98,8 @@ class dbProblem
         // no unsolved problems left
         if (($rows = $stmt->fetchColumn()) == 0)
         {
-            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(', 1);
+            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(
+	Но пока что только по данной теме! :)', 1);
         }
 
         $stmt = $conn->prepare('SELECT problem.problem_id, problem.problem_statement FROM problem 
@@ -113,7 +114,7 @@ class dbProblem
         $result = $stmt->fetch();
 
         $problem_id = $result['problem_id'];
-        $resource_collection_id = $row['problem_statement'];
+        $resource_collection_id = $result['problem_statement'];        
         dbAssignment::assignProblem($user_id, $problem_id);
         $result = array('problem' => $problem_id);
 
@@ -146,7 +147,7 @@ class dbProblem
 
         // Check whether the stated exam_item_number exists
         $number_check = $conn->prepare('SELECT exam_item_id FROM exam_item WHERE exam_item_number  = ?');
-        $number_check->execute(array((int)$exam_item_number));
+        $number_check->execute(array($exam_item_number));
         if ($number_check->fetch()['exam_item_id'] === null)
         {
             throw new UserExceptions('Такого номера задания нет в экзамене!', 3);
@@ -159,14 +160,15 @@ class dbProblem
         $stmt->execute(array($exam_item_number, $user_id));
         if (($rows = $stmt->fetchColumn()) == 0)
         {
-            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(\nНо пока что только под этим номером! :)', 1);
+            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(
+Но пока что только под этим номером! :)', 1);
         }
 
         $stmt = $conn->prepare('SELECT problem.problem_id, problem.problem_statement FROM problem 
                                 INNER JOIN exam_item ON (exam_item.exam_item_id = problem.exam_item_id AND exam_item.exam_item_number = ?)
                                 LEFT JOIN assignment ON (assignment.problem_id = problem.problem_id AND assignment.user_id = ?) 
                                 WHERE assignment.problem_id IS NULL LIMIT ?, 1');
-        $stmt->bindParam('1', exam_item_number, PDO::PARAM_INT);                        
+        $stmt->bindParam('1', $exam_item_number, PDO::PARAM_INT);                        
         $stmt->bindParam('2', $user_id, PDO::PARAM_INT);
         $stmt->bindParam('3', mt_rand(0, $rows - 1), PDO::PARAM_INT);
         unset($rows);
@@ -175,7 +177,7 @@ class dbProblem
 
 
         $problem_id = $result['problem_id'];
-        $resource_collection_id = $row['problem_statement'];
+        $resource_collection_id = $result['problem_statement'];
         dbAssignment::assignProblem($user_id, $problem_id);
         $result = array('problem' => $problem_id);
 

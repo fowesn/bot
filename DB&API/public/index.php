@@ -3,7 +3,7 @@ use \Slim\Http\Request as Request;
 use \Slim\Http\Response as Response;
 
 require '../vendor/autoload.php';
-require '../config/config.php';
+include '../config/config.php';
 
 $app = new \Slim\App();
 
@@ -58,7 +58,7 @@ $app->get('/problems/problem', function (Request $request, Response $response)
 
     if (is_numeric($type))
     {
-        $data = dbProblem::getProblemByNumber($user_id, $type);
+        $data = dbProblem::getProblemByNumber($user_id, (int)$type);
     }
     elseif ($type === 'random')
     {
@@ -66,9 +66,9 @@ $app->get('/problems/problem', function (Request $request, Response $response)
     }
     else
     {
-        $data = dbProblem::getProblemByType($user_id, $type);
+        $data = dbProblem::getProblemByType($user_id, mb_convert_encoding($type, "utf-8", mb_detect_encoding($type)));
     }
-
+	
     $problem = $data['problem'];
     unset ($data["problem"]);
     $answer = array ('success' => 'true' , 'problem' => $problem,'data' => $data);
@@ -129,12 +129,12 @@ $app->get('/problems/answer', function (Request $request, Response $response)
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
 
     $data = dbResult::getAnswer($user_id, $problem_id);
-    $answer = array ('success' => 'true' , 'data' => $data);
+    $answer = array ('success' => 'true' , 'answer' => $data);
     $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
-$app->post('problems/answer', function (Request $request, Response $response)
+$app->post('/problems/answer', function (Request $request, Response $response)
 {   
     $problem_id = $request->getParam('problem_id', null);
     $user_answer = $request->getParam('answer', null);
@@ -163,13 +163,13 @@ $app->post('problems/answer', function (Request $request, Response $response)
     $user_id = dbMisc::getGlobalUserId($user_id, $service);
     if (checkAnswer::checkB(dbAssignment::assignAnswer($user_id, $problem_id, $user_answer), $user_answer)) 
     {
-        $answer = array ('success' => 'true' , 'result' => true);
+        $user_answer = array ('success' => 'true' , 'result' => true);
     } 
     else 
     {
-        $answer = array ('success' => 'true' , 'result' => false);
+        $user_answer = array ('success' => 'true' , 'result' => false);
     }
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
+    $response = $response->withJson($user_answer, 200, JSON_UNESCAPED_UNICODE);
     return $response;
 });
 
