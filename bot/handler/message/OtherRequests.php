@@ -16,7 +16,7 @@ class OtherRequests
         //проверка кодов http
         $code = substr(get_headers($url)[0], 9, 3);
         if($code != 200)
-            $message = $code . " " . self::$server_error_message . "\r\n\r\n";
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
         else {
             $result = json_decode(file_get_contents($url));
             //проверка ошибок пользователя
@@ -37,7 +37,7 @@ class OtherRequests
         //проверки кодов http
         $code = substr(get_headers($url)[0], 9, 3);
         if($code != 200)
-            $message = $code . " " . self::$server_error_message . "\r\n\r\n";
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
         else {
             $result = json_decode(file_get_contents($url));
             //проверка ошибок пользователя
@@ -53,8 +53,16 @@ class OtherRequests
         }
         return $message;
     }
+
+    /**
+     * @param $userId
+     * @param $preferredResource
+     * @throws \Exception
+     */
     public static function setUserPreferredResource($userId, $preferredResource)
     {
+        if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
         $preferredResource = mb_convert_encoding($preferredResource, 'utf-8', mb_detect_encoding($preferredResource));
         $data = array('resource_type' => urlencode($preferredResource), 'user_id' => (string)$userId, 'service' => 'vk');
         $data_query = http_build_query($data);
@@ -70,23 +78,9 @@ class OtherRequests
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-
-        //$response = json_decode(file_get_contents('http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource?' . $data));
-
-        /*$ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_query);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $result= json_decode(curl_exec($ch));
-        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);*/
-
-
         //проверка ошибок
         if ($code == 404 || $code == 500)
-            $message = $code . ". Что-то пошло не так. Попробуй ещё раз!";
+            $message = $code . ". " . self::$server_error_message;
         else if ($result->success !== "true")
             $message = $result->error->message;
 

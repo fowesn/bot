@@ -10,14 +10,16 @@ namespace api\handler;
 
 use api\Api;
 use api\handler\message as message;
+use api\RequestError;
 
 class message_new
 {
-	/**
-	 * @param $data
-	 * @throws \Exception
-	 * @throws \api\RequestError
-	 */
+    /**
+     * @param $data
+     * @throws RequestError
+     * @throws \Exception
+     * @throws message\Exception
+     */
 
     public static function run ( $data )
     {

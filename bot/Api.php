@@ -25,10 +25,10 @@ class Api {
 	 */
 	static public function messageSend($request_params) {
 		if (!isset($request_params['user_id'])) {
-			throw new \Exception("Не указан user_id");
+			throw new RequestError(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		}
 		if (!isset($request_params['message'])) {
-			throw new \Exception("Не указан message");
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан message");
 		}
 		//в случае если api version и access_token не установлены
 		$request_params = self::setVersionAndToken($request_params);

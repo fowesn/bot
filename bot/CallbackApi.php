@@ -29,11 +29,10 @@ class CallbackApi {
 	 * @throws \Exception когда данные не корректны
 	 */
 	public static function requestHandler($data) {
-		//echo "test";
-		//echo var_dump($data);
 		if (!isset($data->type)) {
 
-			throw new \Exception(__FILE__ . " : " . __LINE__ . " Нет типа события");
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " Нет типа события ");
+
 		}
 
 		if (!isset($data->secret) or $data->secret != SECRET_KEY)

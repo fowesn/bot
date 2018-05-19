@@ -5,6 +5,9 @@ namespace project;
 //вторая догадка, возможно не существует массива $_GET если перейти по ссылки на страницу без параметров
 
 use api\CallbackApi;
+use api\EventNotSupported;
+use api\RequestError;
+use api\SecurityBreach;
 
 if (!isset($_REQUEST)) {
     return;
@@ -55,17 +58,15 @@ spl_autoload_register
 $data = json_decode(file_get_contents('php://input'));
 
 
-
-
 try {
 
 	CallbackApi::requestHandler($data);
 
-} catch (\api\SecurityBreach $err) {
+} catch (SecurityBreach $err) {
 	//echo $err->getMessage();
 	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 
-} catch (\api\EventNotSupported $err) {
+} catch (EventNotSupported $err) {
 //	echo $err->getMessage();
 	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 

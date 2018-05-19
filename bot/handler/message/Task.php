@@ -8,6 +8,8 @@
 
 namespace api\handler\message;
 
+use api\Api;
+
 class Task
 {
     private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
@@ -16,23 +18,28 @@ class Task
     /**
      * @param $userId
      * @return array
-     * @throws Exception
+     * @throws \Exception
      * @throws \api\RequestError
      */
     public static function getRandomTaskMessage($userId)
     {
+        if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
         return self::getTask("random", $userId);
     }
 
-	/**
-	 * @param $userId
-	 * @param $theme
-	 * @return array
-	 * @throws \Exception
-	 * @throws \api\RequestError
-	 */
+    /**
+     * @param $userId
+     * @param $theme
+     * @return array
+     * @throws \Exception
+     * @throws \api\RequestError
+     */
     public static function getThemeTaskMessage($userId, $theme) {
-
+        if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
+        if(!isset($theme))
+        throw  new \Exception(__FILE__ . " : " . __LINE__ . " Не указан theme");
         return self::getTask($theme, $userId);
     }
 
@@ -40,7 +47,7 @@ class Task
      * @param $userId
      * @param $KIMid
      * @return array
-	 * @throws \Exception
+     * @throws \Exception
      * @throws \api\RequestError
      */
     public static function getKIMTaskMessage($userId, $KIMid) {
@@ -48,6 +55,10 @@ class Task
             $message = "Похоже, что номер задания указан неверно. Учти, что я могу дать тебе только задания с номерами от 1 до 23.";
             return array("user_id" => $userId, "message" => $message);
         }
+        if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
+        if(!isset($KIMid))
+        throw  new \Exception(__FILE__ . " : " . __LINE__ . " Не указан KIMid");
 
         return self::getTask($KIMid, $userId);
     }
@@ -56,12 +67,12 @@ class Task
 	 * @param $type - тип запроса задания к апи
 	 * @param $userId - ид пользователя
 	 * @return array - параметры запроса к вк апи
-	 * @throws Exception - ошибки работы функции
 	 * @throws \api\RequestError - ошибки запроса при обращении к вк апи
 	 * @throws \Exception
 	 */
     private static function getTask($type, $userId)
     {
+
 
         $params = array("type" => $type, "user_id" => $userId, "service" => "vk");
         $request_params = http_build_query($params);
@@ -96,12 +107,12 @@ class Task
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
                         // тут нужен attachment документа
-                        $attachment = \api\Api::documentAttachmentMessageSend($userId, $result->data[$i]->content,
+                        $attachment = Api::documentAttachmentMessageSend($userId, $result->data[$i]->content,
                             "задание " . $uniqueNumber, "бот по информатике");
                         break;
                     case 'изображение':
                         // attachment изображения
-                        $attachment = \api\Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+                        $attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
                         break;
                     case 'ссылка':
                         $message .= $result->data[$i]->content;

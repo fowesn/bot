@@ -12,12 +12,15 @@ class Answer
 	private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
 	private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/problems/';
 
-	/**
-	 * @param $userId
-	 * @param $taskId
-	 * @return array
-	 */
+    /**
+     * @param $userId
+     * @param $taskId
+     * @return array
+     * @throws \Exception
+     */
 	public static function getAnswer($userId, $taskId) {
+	    if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		$task = (int)$userId ^ (int)$taskId;
 		$params = array("problem_id" => $task, "user_id" => $userId, "service" => "vk");
 		$request_params = http_build_query($params);
@@ -44,14 +47,16 @@ class Answer
 		return array("user_id" => $userId, "message" => $message);
 	}
 
-	/**
-	 * @param $userId
-	 * @param $taskId
-	 * @return array
-	 * @throws \Exception
-	 * @throws \api\RequestError
-	 */
+    /**
+     * @param $userId
+     * @param $taskId
+     * @return array
+     * @throws \Exception
+     * @throws \api\RequestError
+     */
 	public static function getAnalysis($userId, $taskId) {
+        if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		$task = (int)$userId ^ (int)$taskId;
 		$params = array("problem_id" => $task, "user_id" => $userId, "service" => "vk");
 		$request_params = http_build_query($params);
@@ -96,18 +101,21 @@ class Answer
 				}
 		}
 		if(isset($attachment))
-			return array("user_id" => $userId, "message" => $message, "attachment" => $attachment);
+            return array("user_id" => $userId, "message" => $message, "attachment" => $attachment);
 		else
-			return array("user_id" => $userId, "message" => $message);
+            return array("user_id" => $userId, "message" => $message);
 	}
 
-	/**
-	 * @param $userId
-	 * @param $taskId
-	 * @param $answer
-	 * @return array
-	 */
+    /**
+     * @param $userId
+     * @param $taskId
+     * @param $answer
+     * @return array
+     * @throws \Exception
+     */
 	public static function checkUserAnswer($userId, $taskId, $answer) {
+        if(!isset($userId))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		// post
 		$task = (int)$userId ^ (int)$taskId;
 		$params = array("problem_id" => $task, "answer" => $answer, "user_id" => $userId, "service" => "vk");
@@ -136,7 +144,7 @@ class Answer
 			// если ошибок нет, то собирается сообщение с результатом проверки ответа пользователя
 			$message = (bool)($result->result) ? "Верно" : "Неверно";
 		}
-		return array("user_id" => $userId, "message" => $message);
+        return array("user_id" => $userId, "message" => $message);
 
 	}
 }
