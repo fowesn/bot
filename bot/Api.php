@@ -12,6 +12,27 @@
 namespace api;
 class Api {
 
+
+	static private function apiMessageSend($request_params) {
+		if (!isset($request_params['user_id'])) {
+			throw new RequestError(__FILE__ . " : " . __LINE__ . " Не указан user_id");
+		}
+		if (!isset($request_params['message'])) {
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан message");
+		}
+		//в случае если api version и access_token не установлены
+		$request_params = self::setVersionAndToken($request_params);
+
+		//отправляем
+		$get_params = http_build_query($request_params);
+		$result = json_decode(file_get_contents('https://api.vk.com/method/messages.send?' . $get_params));
+		//обрабатываем ошибки
+		if (!isset($result->error))
+			return;
+		else
+			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
+	}
+
 	/**
 	 * @param $request_params array параметров
 	 *        user_id - id получателя
@@ -30,18 +51,22 @@ class Api {
 		if (!isset($request_params['message'])) {
 			throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан message");
 		}
-		//в случае если api version и access_token не установлены
-		$request_params = self::setVersionAndToken($request_params);
 
-		//отправляем
-		$get_params = http_build_query($request_params);
-		$result = json_decode(file_get_contents('https://api.vk.com/method/messages.send?' . $get_params));
-		//обрабатываем ошибки
-		if (!isset($result->error))
-			return;
-		else
-			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
+		$baseString = $request_params['message'];
+		$user_id = $request_params["user_id"];
+		$attachment = $request_params["attachment"];
+		$i = 0;
 
+		while (strlen($baseString) > 1000) {
+			$end = strripos(substr($baseString, 0, 1000), " ");
+			if (!$end)
+				$end = 1000;
+			self::apiMessageSend(array("user_id" => $user_id, "message" => strip_tags(substr($baseString, 0, $end))));
+			$baseString = substr($baseString, $end);
+
+			$i++;
+		}
+		self::apiMessageSend(array("user_id" => $user_id, "message" => strip_tags($baseString), "attachment" => $attachment));
 	}
 
 	/**
