@@ -175,7 +175,6 @@ class dbProblem
         $stmt->execute();
         $result = $stmt->fetch();
 
-
         $problem_id = $result['problem_id'];
         $resource_collection_id = $result['problem_statement'];
         dbAssignment::assignProblem($user_id, $problem_id);
@@ -184,3 +183,4 @@ class dbProblem
         return array_merge($result, dbResource::getPreferredResource($user_id, $resource_collection_id));
     }
 }
+?>

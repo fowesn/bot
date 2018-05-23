@@ -67,3 +67,4 @@ class dbMisc
         return $global_user_id;
     }
 }
+?>

@@ -56,7 +56,6 @@ class dbResource
                                 INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
                                 WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
         $stmt->execute(array($resource_collection_id, $pref));
-        //unset($pref);
         $resources = array();
         while ($row = $stmt->fetch())
         {
@@ -135,3 +134,4 @@ class dbResource
 
     }
 }
+?>
