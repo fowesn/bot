@@ -56,19 +56,38 @@ class dbResource
                                 INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
                                 WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
         $stmt->execute(array($resource_collection_id, $pref));
-        unset($pref);
+        //unset($pref);
         $resources = array();
         while ($row = $stmt->fetch())
         {
             $resources[] = $row;
         }
-        unset ($row);
 
-//        // There can be no resources preferred by user in the collection, remember that!
-//        if (empty($row))
-//        {
-//            /** @throws  ?Exception  Records with specified resource_type_code does not exist */
-//        }
+        // There can be no resources preferred by user in the collection, remember that!
+        if (empty($resources))
+        {
+            $stmt = $conn->prepare('SELECT resource_type.resource_type_id FROM resource_type 
+                                    WHERE NOT resource_type.resource_type_id = ?');
+            $stmt->execute(array($pref));
+            while ($row = $stmt->fetch()['resource_type_id'])
+            {
+                 $stmt_ = $conn->prepare('SELECT resource.resource_name AS name, resource_type.resource_type_code AS type, resource.resource_content AS content 
+                                FROM resource
+                                INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
+                                WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
+                $stmt_->execute(array($resource_collection_id, $row));
+                
+                while ($row = $stmt_->fetch())
+                {
+                    $resources[] = $row;
+                }
+                
+                if (empty($resources) === FALSE)
+                {
+                    return $resources;
+                }
+            }
+        }
              
         $conn = null;
         return $resources;
