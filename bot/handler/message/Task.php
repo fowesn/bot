@@ -51,10 +51,6 @@ class Task
      * @throws \api\RequestError
      */
     public static function getKIMTaskMessage($userId, $KIMid) {
-        if($KIMid > 23 || $KIMid < 1) {
-            $message = "Похоже, что номер задания указан неверно. Учти, что я могу дать тебе только задания с номерами от 1 до 23.";
-            return array("user_id" => $userId, "message" => $message);
-        }
         if(!isset($userId))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
         if(!isset($KIMid))
