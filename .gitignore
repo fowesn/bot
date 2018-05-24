@@ -1,6 +1,6 @@
 *.iml
 *.xml
-setting.php
+*setting.php
 */config
 */vendor
 */classes/db/dbSettings.php
