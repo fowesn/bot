@@ -36,7 +36,7 @@ class dbProblem
         // no unsolved problems left
         if (($rows = $stmt->fetchColumn()) == 0)
         {
-            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(', 1);
+            throw new UserExceptions('Ты гений или просто сын/дочь маминой подруги - у меня кончились задания :(', 1);
         }
 
 
@@ -86,7 +86,8 @@ class dbProblem
         $type_check->execute(array($problem_type_code));
         if ($type_check->fetch()['problem_type_id'] === null)
         {
-            throw new UserExceptions('Такой категории мы не знаем!', 2);
+            throw new UserExceptions("Такой категории я не знаю!
+	    Если хочешь узнать список тем, напиши \"темы\"", 2);
         }
 
         $stmt = $conn->prepare('SELECT COUNT(*) FROM problem 
@@ -98,7 +99,7 @@ class dbProblem
         // no unsolved problems left
         if (($rows = $stmt->fetchColumn()) == 0)
         {
-            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(
+            throw new UserExceptions('Ты гений или просто сын/дочь маминой подруги - у меня кончились задания :(
 	Но пока что только по данной теме! :)', 1);
         }
 
@@ -160,7 +161,7 @@ class dbProblem
         $stmt->execute(array($exam_item_number, $user_id));
         if (($rows = $stmt->fetchColumn()) == 0)
         {
-            throw new UserExceptions('Вы гений или просто сын/дочь маминой подруги - у нас кончились задания :(
+            throw new UserExceptions('Ты гений или просто сын/дочь маминой подруги - у меня кончились задания :(
 Но пока что только под этим номером! :)', 1);
         }
 

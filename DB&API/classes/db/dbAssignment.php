@@ -81,7 +81,7 @@ class dbAssignment
         $stmt->execute(array($problem_id, $user_id));
         if (($assignment_id = $stmt->fetch()['assignment_id']) === null)
         {
-            throw new UserExceptions('Вы не получали задания, на которое пытаетесь дать ответ!', 4);
+            throw new UserExceptions('Ты не получал(-а) задания, на которое пытаешься дать ответ!', 4);
         }
 
         // Saving last answer in assignment

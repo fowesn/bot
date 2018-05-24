@@ -123,7 +123,8 @@ class dbResource
         // Resources with stated type does not exist
         if (empty($resource_type_id = $stmt->fetch()['resource_type_id']))
         {
-            throw new UserExceptions('Такого вида ресурса у нас нет :(', 5);
+            throw new UserExceptions("Такого вида ресурса у меня нет :(
+	    Чтобы установить ресурс, которые тебе нравится, напиши \"ресурс [название ресурса]\"", 5);
         }
 
         $stmt = $conn->prepare('UPDATE user SET preferred_resource_type = ? WHERE user_id = ?');
