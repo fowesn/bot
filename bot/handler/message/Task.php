@@ -102,7 +102,7 @@ class Task
             // куча напоминаний о том, как прислать ответ и попросить разбор
             $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $uniqueNumber . " <ответ>\".\r\n" .
                 "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор " . $uniqueNumber . "\".\r\n" .
-                "Если ты хочешь узнать правильный ответ, напиши \"ответ " . $uniqueNumber . "\".\r\n\r\n";
+                "Если ты хочешь узнать правильный ответ, напиши \"ответ " . $uniqueNumber . "\".\r\n";
             for ($i = 0; $i < count($result->data); $i++)
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
@@ -115,10 +115,13 @@ class Task
                         $attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
                         break;
                     case 'ссылка':
-                        $message .= $result->data[$i]->content;
+                        $message .= "\r\n" . $result->data[$i]->content;
                         break;
                     case 'текст':
-                        $message .= $result->data[$i]->content;
+						if(preg_match("#^http#i", $result->data[$i]->content))
+							$attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+						else
+							$message .= "\r\n" . $result->data[$i]->content;
                         break;
                     default:
                         break;

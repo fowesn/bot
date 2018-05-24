@@ -86,7 +86,7 @@ class LoadFile {
 		$boundary = md5(uniqid(time()));
 		/** подготовка контента */
 		$content = "--" . $boundary . "\r\n";
-		$content .= 'Content-Disposition: form-data; name="' . $data['fieldName'] . '"; filename="' . $data['fileName'] . '"' . "\r\n";
+		$content .= 'Content-Disposition: form-data; name="' . $data['fieldName'] . '"; filename="' . $data['fileName'] . '"'."\r\n";
 		$content .= "Content-Type: " . $data['mime'] . "\r\n";
 		$content .= 'Content-Transfer-Encoding: binary' . "\r\n\r\n";
 		$content .= $data['content'] . "\r\n";
@@ -98,9 +98,10 @@ class LoadFile {
 		fwrite($fp, 'Content-Length: ' . strlen($content) . "\r\n\r\n");
 		fwrite($fp, $content);
 		$result = '';
-		stream_set_timeout($fp, 1);
-		while (strlen($buf = fread($fp, 10)) > 0) {
-			$result .= $buf;
+		stream_set_timeout($fp,1);
+		while (strlen($buf = fread($fp, 10))>0)
+		{
+			$result .=$buf;
 		}
 		// закрываем соединение
 		fclose($fp);
@@ -108,15 +109,14 @@ class LoadFile {
 		return $result;
 	}
 	///////////////////////ФАСАД////////////////////
-
 	/**
 	 * @param $server array - url parse
 	 * @param $document_path string
 	 * @return string http response
 	 * @throws \Exception - отсутсвие файла
 	 */
-	public static function sendDocument($server, $document_path) {
-		return self::sendData($server, self::getDocument($document_path));
+	public static function sendDocument($server, $document_path){
+		return self::sendData($server,self::getDocument($document_path));
 	}
 
 	/**
@@ -125,7 +125,7 @@ class LoadFile {
 	 * @return string http response
 	 * @throws \Exception
 	 */
-	public static function sendImage($server, $photo_path) {
-		return self::sendData($server, self::getImage($photo_path));
+	public static function sendImage($server, $photo_path){
+		return self::sendData($server,self::getImage($photo_path));
 	}
 }

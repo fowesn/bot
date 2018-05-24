@@ -94,7 +94,10 @@ class Answer
 						$message = $result->data[$i]->content;
 						break;
 					case 'текст':
-						$message = $result->data[$i]->content;
+						if(preg_match("#^http#i", $result->data[$i]->content))
+							$attachment = \api\Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+						else
+							$message .= "\r\n" . $result->data[$i]->content;
 						break;
 					default:
 						break;

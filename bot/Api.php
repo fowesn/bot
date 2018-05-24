@@ -12,28 +12,8 @@
 namespace api;
 class Api {
 
-
-	static private function apiMessageSend($request_params) {
-		if (!isset($request_params['user_id'])) {
-			throw new RequestError(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-		}
-		if (!isset($request_params['message'])) {
-			throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан message");
-		}
-		//в случае если api version и access_token не установлены
-		$request_params = self::setVersionAndToken($request_params);
-
-		//отправляем
-		$get_params = http_build_query($request_params);
-		$result = json_decode(file_get_contents('https://api.vk.com/method/messages.send?' . $get_params));
-		//обрабатываем ошибки
-		if (!isset($result->error))
-			return;
-		else
-			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
-	}
-
 	/**
+	 * Отправляет сообщение одному пользователю.
 	 * @param $request_params array параметров
 	 *        user_id - id получателя
 	 *        message - сообщение
@@ -44,7 +24,28 @@ class Api {
 	 * message содержит описание от вк
 	 * code содержит код ответа вк
 	 */
-	static public function messageSend($request_params) {
+	static private function apiMessageSend($request_params) {
+
+
+		//в случае если api version и access_token не установлены
+		$request_params = self::setVersionAndToken($request_params);
+
+		//отправляем
+		$get_params = http_build_query($request_params);
+		$result = json_decode(file_get_contents('https://api.vk.com/method/messages.send?' . $get_params));
+		ob_start();
+		print_r(var_dump($result));
+		$out = ob_get_contents();
+		ob_end_clean();
+		file_put_contents(LOG, $out."\r\n\r\n\r\n\r\n", FILE_APPEND);
+		//обрабатываем ошибки
+		if (!isset($result->error))
+			return;
+		else
+			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
+
+	}
+	static public function messageSend($request_params){
 		if (!isset($request_params['user_id'])) {
 			throw new RequestError(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		}
@@ -57,16 +58,17 @@ class Api {
 		$attachment = $request_params["attachment"];
 		$i = 0;
 
-		while (strlen($baseString) > 1000) {
-			$end = strripos(substr($baseString, 0, 1000), " ");
-			if (!$end)
+		while (strlen($baseString) > 1000){
+			$end = strripos(substr($baseString,0,1000)," ");
+			if(!$end)
 				$end = 1000;
-			self::apiMessageSend(array("user_id" => $user_id, "message" => strip_tags(substr($baseString, 0, $end))));
-			$baseString = substr($baseString, $end);
+			self::apiMessageSend(array("user_id" => $user_id,"message" => strip_tags(substr($baseString,0,$end))));
+			$baseString = substr($baseString,$end);
 
 			$i++;
 		}
 		self::apiMessageSend(array("user_id" => $user_id, "message" => strip_tags($baseString), "attachment" => $attachment));
+
 	}
 
 	/**

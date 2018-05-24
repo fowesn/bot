@@ -108,6 +108,11 @@ class message_new
 				Api::messageSend(array("user_id" => $data->object->user_id,
 					"message" => message\UnidentifiedPartialRequests::hello()));
                 break;
+			case "тест":
+				$result = Api::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+				Api::messageSend(array("user_id" => $data->object->user_id,
+				"message" => file_get_contents("http://kappa.cs.petrsu.ru/~omelchen/vk/bot/lotoftext"),"attachment" => $result));
+				break;
             default:
                 if (preg_match("/^\d+$/", $user_message[0])) {
                     if (count($user_message) != 2)

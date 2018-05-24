@@ -6,7 +6,6 @@
  * Time: 15:52
  */
 
-namespace api\handler;
 
 class confirmation {
 
