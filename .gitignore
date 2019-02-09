@@ -1,6 +1,18 @@
 *.iml
 *.xml
 *setting.php
+
+# конфигурационные файлы
 */config
+
+# ресурсы по заданиям
+*/files
+
+# slim
 */vendor
+
+# данные для использования mysql
 */classes/db/dbSettings.php
+
+# лог-файлы
+*/logs
