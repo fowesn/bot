@@ -1,18 +1,17 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: kurenchuksergey
+ * User: fow
  * Date: 26.02.18
  * Time: 14:13
  */
 
 namespace api;
 
-
 /**
  * Class CallbackApi Реализует распределение запросов событий по модулям обработки.
  * @package api
- * @author kurenchuksergey
+ * @author fow
  * @version 0.2
  */
 class CallbackApi {
@@ -51,21 +50,21 @@ class CallbackApi {
 }
 
 /**
- * Class SecurityBreach возникает в случае неверного ключа
- * @package api
- */
-class SecurityBreach extends \Exception {
-	public function __construct($message, $code = 0, \Exception $previous = null) {
-		parent::__construct($message, $code, $previous);
-	}
-}
-
-/**
  * Class EventNotSupported возникает в случае отсутсвие обработчика события
  * @package api
  */
 class EventNotSupported extends \Exception {
-	public function __construct($message, $code = 0, \Exception $previous = null) {
-		parent::__construct($message, $code, $previous);
-	}
+    public function __construct($message, $code = 0, \Exception $previous = null) {
+        parent::__construct($message, $code, $previous);
+    }
+}
+/**
+ * Class SecurityBreach возникает в случае неверного ключа
+ * @package api
+ */
+
+class SecurityBreach extends \Exception {
+    public function __construct($message, $code = 0, \Exception $previous = null) {
+        parent::__construct($message, $code, $previous);
+    }
 }
