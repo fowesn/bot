@@ -5,7 +5,7 @@
  * Date: 08.03.18
  * Time: 15:52
  */
-namespace api\handler;
+namespace MainModule\handler;
 
 class confirmation {
 

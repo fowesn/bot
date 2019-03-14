@@ -6,7 +6,7 @@
  * Time: 14:39
  */
 
-namespace api\handler\message;
+namespace MainModule\handler\message;
 class Answer
 {
 	private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
@@ -52,7 +52,7 @@ class Answer
      * @param $taskId
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
+     * @throws \MainModule\RequestError
      */
 	public static function getAnalysis($userId, $taskId) {
         if(!isset($userId))
@@ -83,19 +83,19 @@ class Answer
 				switch ($result->data[$i]->type) {
 					case 'pdf-файл':
 						// тут нужен attachment документа
-						$attachment = \api\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content,
+						$attachment = \MainModule\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content,
 							"разбор " . $taskId, "бот по информатике");
 						break;
 					case 'изображение':
 						// attachment изображения
-						$attachment = \api\Api::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
+						$attachment = \MainModule\Api::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
 						break;
 					case 'ссылка':
 						$message = $result->data[$i]->content;
 						break;
 					case 'текст':
 						if(preg_match("#^http#i", $result->data[$i]->content))
-							$attachment = \api\Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+							$attachment = \MainModule\Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
 						else
 							$message .= "\r\n" . $result->data[$i]->content;
 						break;

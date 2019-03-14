@@ -6,10 +6,10 @@
  * Time: 23:29
  * @version 0.1
  * @author kurenchuksergey
- * @package api
+ * @package MainModule
  */
 
-namespace api;
+namespace MainModule;
 class Api {
 
 	/**

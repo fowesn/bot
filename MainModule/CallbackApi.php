@@ -6,11 +6,11 @@
  * Time: 14:13
  */
 
-namespace api;
+namespace MainModule;
 
 /**
  * Class CallbackApi Реализует распределение запросов событий по модулям обработки.
- * @package api
+ * @package MainModule
  * @author fow
  * @version 0.2
  */
@@ -38,10 +38,10 @@ class CallbackApi {
 			throw new SecurityBreach("Ключ не соответствует");
 
 
-		if (class_exists('\\api\\handler\\' . $data->type, true)) {
-			return call_user_func('\\api\\handler\\' . $data->type . "::run", $data);
+		if (class_exists('\\MainModule\\handler\\' . $data->type, true)) {
+			return call_user_func('\\MainModule\\handler\\' . $data->type . "::run", $data);
 		} else
-			throw new EventNotSupported("Обработчика события " . $data->type . " нет в " . __NAMESPACE__ . "\\handler\\" . $data->type);
+			throw new EventNotSupported("Обработчика события " . $data->type . " нет в MainModule\\handler\\" . $data->type);
 
 
 	}
@@ -51,7 +51,7 @@ class CallbackApi {
 
 /**
  * Class EventNotSupported возникает в случае отсутсвие обработчика события
- * @package api
+ * @package MainModule
  */
 class EventNotSupported extends \Exception {
     public function __construct($message, $code = 0, \Exception $previous = null) {
@@ -60,7 +60,7 @@ class EventNotSupported extends \Exception {
 }
 /**
  * Class SecurityBreach возникает в случае неверного ключа
- * @package api
+ * @package MainModule
  */
 
 class SecurityBreach extends \Exception {

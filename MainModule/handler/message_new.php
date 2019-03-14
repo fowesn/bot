@@ -6,11 +6,11 @@
  * Time: 17:48
  */
 
-namespace api\handler;
+namespace MainModule\handler;
 
-use api\Api;
-use api\handler\message as message;
-use api\RequestError;
+use MainModule\Api;
+use MainModule\handler\message as message;
+use MainModule\RequestError;
 
 class message_new
 {
@@ -42,7 +42,7 @@ class message_new
             case 'фото':
 				$result = Api::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
 
-//				$result = \api\Api::documentAttachmentMessageSend($data->object->user_id,"https://www.cryptopro.ru/sites/default/files/products/pdf/files/CryptoProPDF_UserGuide.pdf");
+//				$result = \MainModule\Api::documentAttachmentMessageSend($data->object->user_id,"https://www.cryptopro.ru/sites/default/files/products/pdf/files/CryptoProPDF_UserGuide.pdf");
 				Api::messageSend(array("user_id" => $data->object->user_id, "message" => "смотри че могу", "attachment" => $result));
                 break;
             case 'помощь':

@@ -6,9 +6,9 @@
  * Time: 14:39
  */
 
-namespace api\handler\message;
+namespace MainModule\handler\message;
 
-use api\Api;
+use MainModule\Api;
 
 class Task
 {
@@ -19,7 +19,7 @@ class Task
      * @param $userId
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
+     * @throws \MainModule\RequestError
      */
     public static function getRandomTaskMessage($userId)
     {
@@ -33,7 +33,7 @@ class Task
      * @param $theme
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
+     * @throws \MainModule\RequestError
      */
     public static function getThemeTaskMessage($userId, $theme) {
         if(!isset($userId))
@@ -48,7 +48,7 @@ class Task
      * @param $KIMid
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
+     * @throws \MainModule\RequestError
      */
     public static function getKIMTaskMessage($userId, $KIMid) {
         if(!isset($userId))
@@ -63,7 +63,7 @@ class Task
 	 * @param $type - тип запроса задания к апи
 	 * @param $userId - ид пользователя
 	 * @return array - параметры запроса к вк апи
-	 * @throws \api\RequestError - ошибки запроса при обращении к вк апи
+	 * @throws \MainModule\RequestError - ошибки запроса при обращении к вк апи
 	 * @throws \Exception
 	 */
     private static function getTask($type, $userId)

@@ -2,10 +2,10 @@
 
 namespace project;
 
-use api\CallbackApi;
-use api\EventNotSupported;
-use api\RequestError;
-use api\SecurityBreach;
+use MainModule\CallbackApi;
+use MainModule\EventNotSupported;
+use MainModule\RequestError;
+use MainModule\SecurityBreach;
 
 if (!isset($_REQUEST)) {
     return;
