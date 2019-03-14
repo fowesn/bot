@@ -15,6 +15,7 @@ if (!isset($_REQUEST)) {
  * Подключение модулей
  */
 include_once("settings.php");
+
 //////////////AutoLoader//////////////////////////
 
 spl_autoload_register
@@ -51,6 +52,7 @@ spl_autoload_register
 );
 
 /////////////////////////////////////////////////
+
 $data = json_decode(file_get_contents('php://input'));
 
 
@@ -65,6 +67,10 @@ try {
 } catch (EventNotSupported $err) {
     //echo $err->getMessage();
 	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
+
+} catch (RequestError $err){
+    //echo $err->getMessage();
+    file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
 
 } catch (\Exception $err) {
     //echo $err->getMessage();
