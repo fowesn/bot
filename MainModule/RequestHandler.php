@@ -9,12 +9,12 @@
 namespace MainModule;
 
 /**
- * Class CallbackApi Реализует распределение запросов событий по модулям обработки.
+ * Class RequestHandler Реализует распределение запросов событий по модулям обработки.
  * @package MainModule
  * @author fow
  * @version 0.2
  */
-class CallbackApi {
+class RequestHandler {
 	/**
 	 * Функция входа
 	 * @return array параметров

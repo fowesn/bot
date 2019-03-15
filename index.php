@@ -2,11 +2,7 @@
 
 namespace project;
 
-use MainModule\CallbackApi;
-use MainModule\EventNotSupported;
-use MainModule\RequestError;
-use MainModule\SecurityBreach;
-
+use MainModule\RequestHandler;
 if (!isset($_REQUEST)) {
     return;
 }
@@ -57,21 +53,7 @@ $data = json_decode(file_get_contents('php://input'));
 
 
 try {
-
-	CallbackApi::requestHandler($data);
-
-} catch (SecurityBreach $err) {
-	//echo $err->getMessage();
-	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
-
-} catch (EventNotSupported $err) {
-    //echo $err->getMessage();
-	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
-
-} catch (RequestError $err){
-    //echo $err->getMessage();
-    file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
-
+	RequestHandler::requestHandler($data);
 } catch (\Exception $err) {
     //echo $err->getMessage();
     file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
