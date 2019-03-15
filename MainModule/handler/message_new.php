@@ -17,7 +17,7 @@ class message_new
      * @param $data
      * @throws \Exception
      */
-    public static function run ( $data )
+    public static function parse($data)
     {
         $user_message = $data->object->body;
         //приведение к нижнему регистру

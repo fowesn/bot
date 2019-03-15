@@ -36,12 +36,17 @@ class RequestHandler {
 			throw new \Exception(__FILE__ . " : " . __LINE__ . "Ключ не соответствует");
 
 
-		if (class_exists('\\MainModule\\handler\\' . $data->type, true)) {
-			return call_user_func('\\MainModule\\handler\\' . $data->type . "::run", $data);
-		} else
-			throw new \Exception(__FILE__ . " : " . __LINE__ . "Обработчика события " . $data->type . " нет в MainModule\\handler\\" . $data->type);
-
-
+		switch ($data->type)
+        {
+            case 'message_new':
+                \MainModule\handler\message_new::parse($data);
+                break;
+            case 'confirmation':
+                \MainModule\handler\confirmation::confirm();
+                break;
+            default:
+                throw new \Exception(__FILE__ . " : " . __LINE__ . "Обработчика события " . $data->type . " нет в MainModule\\handler\\" . $data->type);
+        }
 	}
 
 

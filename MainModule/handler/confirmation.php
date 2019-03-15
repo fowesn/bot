@@ -9,7 +9,7 @@ namespace MainModule\handler;
 
 class confirmation {
 
-	public static function run($data) {
+	public static function confirm() {
 		echo CONFIRMATION_TOKEN;
 		exit();
 	}
