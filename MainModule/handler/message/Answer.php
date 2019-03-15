@@ -52,7 +52,6 @@ class Answer
      * @param $taskId
      * @return array
      * @throws \Exception
-     * @throws \MainModule\RequestError
      */
 	public static function getAnalysis($userId, $taskId) {
         if(!isset($userId))

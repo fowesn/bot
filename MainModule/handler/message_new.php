@@ -10,16 +10,13 @@ namespace MainModule\handler;
 
 use MainModule\VKAPI;
 use MainModule\handler\message as message;
-use MainModule\RequestError;
-
 class message_new
 {
+
     /**
      * @param $data
-     * @throws RequestError
      * @throws \Exception
      */
-
     public static function run ( $data )
     {
         $user_message = $data->object->body;
