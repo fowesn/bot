@@ -23,9 +23,7 @@ class CallbackApi {
 	 *        attachment - вложение (файл должен быть отдельно загружен на сервер)
 	 *
 	 * @param $data array полученный json от вк
-	 * @throws EventNotSupported в случае когда нет обработчика собиытия
-	 * @throws SecurityBreach в случае аттаки
-	 * @throws \Exception когда данные не корректны
+	 * @throws \Exception когда данные не корректны/нет обработчика события или в случае атаки
 	 */
 	public static function requestHandler($data) {
 		if (!isset($data->type)) {
@@ -35,36 +33,16 @@ class CallbackApi {
 		}
 
 		if (!isset($data->secret) or $data->secret != SECRET_KEY)
-			throw new SecurityBreach("Ключ не соответствует");
+			throw new \Exception("Ключ не соответствует");
 
 
 		if (class_exists('\\MainModule\\handler\\' . $data->type, true)) {
 			return call_user_func('\\MainModule\\handler\\' . $data->type . "::run", $data);
 		} else
-			throw new EventNotSupported("Обработчика события " . $data->type . " нет в MainModule\\handler\\" . $data->type);
+			throw new \Exception("Обработчика события " . $data->type . " нет в MainModule\\handler\\" . $data->type);
 
 
 	}
 
 
-}
-
-/**
- * Class EventNotSupported возникает в случае отсутсвие обработчика события
- * @package MainModule
- */
-class EventNotSupported extends \Exception {
-    public function __construct($message, $code = 0, \Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
-    }
-}
-/**
- * Class SecurityBreach возникает в случае неверного ключа
- * @package MainModule
- */
-
-class SecurityBreach extends \Exception {
-    public function __construct($message, $code = 0, \Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
-    }
 }

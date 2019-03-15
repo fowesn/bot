@@ -19,8 +19,7 @@ class Api {
 	 *        message - сообщение
 	 *        attachment - вложение (файл должен быть отдельно загружен на сервер)
 	 *
-	 * @throws \Exception  в случае отсутсвие user_id
-	 * @throws RequestError в случае ошибки отправки сообщение (на стороне вк),
+	 * @throws \Exception  в случае отсутсвие user_id, в случае ошибки отправки сообщения (на стороне вк),
 	 * message содержит описание от вк
 	 * code содержит код ответа вк
 	 */
@@ -42,12 +41,17 @@ class Api {
 		if (!isset($result->error))
 			return;
 		else
-			throw new RequestError(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
+			throw new \Exception(__FILE__." : ".__LINE__." ".$result->error->error_msg, $result->error->error_code);
 
 	}
+
+    /**
+     * @param $request_params
+     * @throws \Exception
+     */
 	static public function messageSend($request_params){
 		if (!isset($request_params['user_id'])) {
-			throw new RequestError(__FILE__ . " : " . __LINE__ . " Не указан user_id");
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		}
 		if (!isset($request_params['message'])) {
 			throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан message");
@@ -87,7 +91,7 @@ class Api {
 
 		/** В случае ошибки запроса */
 		if (isset($result->error))
-			throw new RequestError(__FILE__ . " : " . __LINE__ . " " . $result->error->error_msg . " " . 'https://api.vk.com/method/photos.getMessagesUploadServer?' .
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " " . $result->error->error_msg . " " . 'https://api.vk.com/method/photos.getMessagesUploadServer?' .
 				http_build_query($request_params), $result->error->error_code);
 
 		/** @var  $server - сервер загрузки изображения */
@@ -104,7 +108,7 @@ class Api {
 
 
 		if (isset($photo_server_json->error))
-			throw new RequestError(__FILE__ . " : " . __LINE__ . $photo_server_json->error, $photo_server_json->error->error_code);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . $photo_server_json->error, $photo_server_json->error->error_code);
 
 		/** @var  $photo_save array параметры для сохранения фото на сервере */
 		$photo_save = array(
@@ -118,7 +122,7 @@ class Api {
 		$result = json_decode(file_get_contents('https://api.vk.com/method/photos.saveMessagesPhoto?' . http_build_query($photo_save)));
 		/** В случае если произошла ошибка */
 		if (isset($result->error))
-			throw new RequestError(__FILE__ . " : " . __LINE__ . $result->error->error_msg, $result->error->error_code);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . $result->error->error_msg, $result->error->error_code);
 
 		/** @var array $result */
 		if (isset($result->response[0])) {
@@ -133,9 +137,8 @@ class Api {
 	 * @param $document_path string - url к документу
 	 * @param $title string - названия документа для VK
 	 * @param $tags string - список тегов для VK
-	 * @return array[]|false|mixed|string|string[] - возвращает параметр attachment для messageSend и других ....
-	 *     * @throws RequestError в случае ошибок при запросе к вк API
-	 * @throws \Exception - в случае отсутствия файла
+	 * @return array[]|false|mixed|string|string[] - возвращает параметр attachment для messageSend и других ..
+	 * @throws \Exception - в случае отсутствия файла или ошибок при запросе к вк API
 	 */
 	static public function documentAttachmentMessageSend($user_id, $document_path, $title=null, $tags=null) {
 
@@ -145,7 +148,7 @@ class Api {
 		$result = json_decode(file_get_contents('https://api.vk.com/method/docs.getMessagesUploadServer?' . http_build_query($request_params)));
 		/** проверка на успешность */
 		if (isset($result->error))
-			throw new RequestError(__FILE__ . " : " . __LINE__ . " " . $result->error->error_msg . " " . 'https://api.vk.com/method/docs.getMessagesUploadServer?' .
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " " . $result->error->error_msg . " " . 'https://api.vk.com/method/docs.getMessagesUploadServer?' .
 				http_build_query($request_params), $result->error->error_code);
 		/** @var  $server - сервер загрузки изображения */
 		$server = parse_url($result->response->upload_url);
@@ -159,7 +162,7 @@ class Api {
 		/** end temp */
 
 		if (isset($document_server_json->error))
-			throw new RequestError(__FILE__ . " : " . __LINE__ . $document_server_json->error, $document_server_json->error->error_code);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . $document_server_json->error, $document_server_json->error->error_code);
 
 		/** @var array $document_save - параметры для сохранения документа */
 		$document_save = array(
@@ -170,7 +173,7 @@ class Api {
 		$document_save = self::setVersionAndToken($document_save);
 		$result = json_decode(file_get_contents('https://api.vk.com/method/docs.save?' . http_build_query($document_save)));
 		if (isset($result->error))
-			throw new RequestError(__FILE__ . " : " . __LINE__ . $result->error->error_msg, $result->error->error_code);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . $result->error->error_msg, $result->error->error_code);
 
 		if (isset($result->response[0])) {
 			$result = $result->response[0];
@@ -214,7 +217,7 @@ class Api {
 		if (!isset($result->error))
 			return $result;
 		else
-			throw new RequestError($result->error->error_msg, $result->error->error_code);
+			throw new \Exception($result->error->error_msg, $result->error->error_code);
 	}
 
 	/**
@@ -225,7 +228,6 @@ class Api {
 	 *          Возможные значения: именительный – nom, родительный – gen, дательный – dat,
 	 *          винительный – acc, творительный – ins, предложный – abl. По умолчанию nom.
 	 * @return mixed json user info
-	 * @throws RequestError
 	 * @throws \Exception
 	 */
 	static public function getUserInfo($request_params) {
@@ -242,7 +244,7 @@ class Api {
 		if (!isset($result->error))
 			return $result;
 		else
-			throw new RequestError($result->error->error_msg, $result->error->error_code);
+			throw new \Exception($result->error->error_msg, $result->error->error_code);
 
 
 	}
@@ -260,18 +262,6 @@ class Api {
 			$request_params['access_token'] = COMMUNITY_TOKEN;
 		}
 		return $request_params;
-	}
-}
-
-
-/*
- * Класс исключения для работы с вк api
- * обработка кодов возврата в случае неудачи при использований VK_API
- */
-
-class RequestError extends \Exception {
-	public function __construct($message, $code = 0, \Exception $previous = null) {
-		parent::__construct($message, $code, $previous);
 	}
 }
 

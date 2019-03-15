@@ -18,7 +18,6 @@ class message_new
      * @param $data
      * @throws RequestError
      * @throws \Exception
-     * @throws message\Exception
      */
 
     public static function run ( $data )
