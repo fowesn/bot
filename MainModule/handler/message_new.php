@@ -17,11 +17,11 @@ class message_new
      * @param $data
      * @throws \Exception
      */
-    public static function parse($data)
+    public static function chooseAnswer($data)
     {
-        $user_message = $data->object->body;
+        $user_message = self::parse($data->object->body);
         //приведение к нижнему регистру
-        $user_message = mb_strtolower($user_message, 'UTF-8');
+        /*$user_message = mb_strtolower($user_message, 'UTF-8');
         //удаление из массива кавычек, угловых скобок, точек, запятых, если пользователь случайно их поставил
         //$search = array('\"', '<', '>', ',', '.');
         $user_message = str_replace("\"", "", $user_message);
@@ -31,7 +31,7 @@ class message_new
         $user_message = str_replace(",", "", $user_message);
         $user_message = str_replace(".", "", $user_message);
         //разделение сообщения пользователя на массив слов
-        $user_message = explode(' ', $user_message);
+        $user_message = explode(' ', $user_message);*/
 
         switch ( $user_message[0] )
         {
@@ -58,18 +58,15 @@ class message_new
 						"message" => message\UnidentifiedPartialRequests::themes()));
                 else
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
-						"message" => message\OtherRequests::getThemesList()));
+						"message" => self::deleteUnderscore(message\OtherRequests::getThemesList())));
                 break;
             case 'задание':
-                if(count($user_message) > 2)
-					VKAPI::messageSend(array("user_id" => $data->object->user_id,
-						"message" => message\UnidentifiedPartialRequests::tasks()));
-                else if(count($user_message) == 2) {
-                    if (preg_match("/^\d+$/", $user_message[1]))
-						VKAPI::messageSend(message\Task::getKIMTaskMessage($data->object->user_id, $user_message[1]));
-                    else
-						VKAPI::messageSend(message\Task::getThemeTaskMessage($data->object->user_id, $user_message[1]));
-				} else VKAPI::messageSend(message\Task::getRandomTaskMessage($data->object->user_id));
+                if(count($user_message) == 2 && preg_match("/^\d+$/", $user_message[1]))
+                    VKAPI::messageSend(message\Task::getKIMTaskMessage($data->object->user_id, $user_message[1]));
+                else if (count($user_message) == 1)
+                    VKAPI::messageSend(message\Task::getRandomTaskMessage($data->object->user_id));
+                else
+                    VKAPI::messageSend(message\Task::getThemeTaskMessage($data->object->user_id, self::setUnderscore($user_message)));
                 break;
             case 'разбор':
                 if(count($user_message) != 2)
@@ -105,9 +102,13 @@ class message_new
 					"message" => message\UnidentifiedPartialRequests::hello()));
                 break;
 			case "тест":
-				$result = VKAPI::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
-				VKAPI::messageSend(array("user_id" => $data->object->user_id,
-				"message" => file_get_contents("http://kappa.cs.petrsu.ru/~omelchen/vk/bot/lotoftext"),"attachment" => $result));
+				//$result = VKAPI::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+                $reflector = new \ReflectionClass('message_new');
+                $result = $reflector->getFileName() . $reflector->getStartLine();
+
+                VKAPI::messageSend(array("user_id" => $data->object->user_id,
+				//"message" => file_get_contents("http://kappa.cs.petrsu.ru/~omelchen/vk/bot/lotoftext"),"attachment" => $result));
+                "message" => $result));
 				break;
             default:
                 if (preg_match("/^\d+$/", $user_message[0])) {
@@ -122,5 +123,27 @@ class message_new
 						"message" => message\OtherRequests::getBasicMessage()));
                 break;
         }
+    }
+
+    private static function parse($user_message) {
+        //приведение к нижнему регистру
+        $user_message = mb_strtolower($user_message, 'UTF-8');
+        //удаление из массива кавычек, угловых скобок, точек, запятых, если пользователь случайно их поставил
+        $search = array("\"", "\'", "<", ">", ",", ".");
+        $user_message = str_replace($search, "", $user_message);
+        //разделение сообщения пользователя на массив слов
+        $user_message = explode(' ', $user_message);
+        return $user_message;
+    }
+    private static function setUnderscore($theme)
+    {
+        array_shift($theme);
+        $theme = implode("_", $theme);
+        return $theme;
+    }
+    private static function deleteUnderscore($text)
+    {
+        $text = str_replace("_", " ", $text);
+        return $text;
     }
 }

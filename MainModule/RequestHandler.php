@@ -39,13 +39,13 @@ class RequestHandler {
 		switch ($data->type)
         {
             case 'message_new':
-                \MainModule\handler\message_new::parse($data);
+                \MainModule\handler\message_new::chooseAnswer($data);
                 break;
             case 'confirmation':
                 \MainModule\handler\confirmation::confirm();
                 break;
             default:
-                throw new \Exception(__FILE__ . " : " . __LINE__ . "Обработчика события " . $data->type . " нет в MainModule\\handler\\" . $data->type);
+                throw new \Exception(__FILE__ . " : " . __LINE__ . "Обработчика события " . $data->type . " нет в \\MainModule\\handler\\" . $data->type);
         }
 	}
 
