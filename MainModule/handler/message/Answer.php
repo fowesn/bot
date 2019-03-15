@@ -83,19 +83,19 @@ class Answer
 				switch ($result->data[$i]->type) {
 					case 'pdf-файл':
 						// тут нужен attachment документа
-						$attachment = \MainModule\Api::documentAttachmentMessageSend($userId,$result->data[$i]->content,
+						$attachment = \MainModule\VKAPI::documentAttachmentMessageSend($userId,$result->data[$i]->content,
 							"разбор " . $taskId, "бот по информатике");
 						break;
 					case 'изображение':
 						// attachment изображения
-						$attachment = \MainModule\Api::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
+						$attachment = \MainModule\VKAPI::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
 						break;
 					case 'ссылка':
 						$message = $result->data[$i]->content;
 						break;
 					case 'текст':
 						if(preg_match("#^http#i", $result->data[$i]->content))
-							$attachment = \MainModule\Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+							$attachment = \MainModule\VKAPI::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
 						else
 							$message .= "\r\n" . $result->data[$i]->content;
 						break;

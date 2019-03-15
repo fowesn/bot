@@ -8,7 +8,7 @@
 
 namespace MainModule\handler\message;
 
-use MainModule\Api;
+use MainModule\VKAPI;
 
 class Task
 {
@@ -103,19 +103,19 @@ class Task
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
                         // тут нужен attachment документа
-                        $attachment = Api::documentAttachmentMessageSend($userId, $result->data[$i]->content,
+                        $attachment = VKAPI::documentAttachmentMessageSend($userId, $result->data[$i]->content,
                             "задание " . $uniqueNumber, "бот по информатике");
                         break;
                     case 'изображение':
                         // attachment изображения
-                        $attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+                        $attachment = VKAPI::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
                         break;
                     case 'ссылка':
                         $message .= "\r\n" . $result->data[$i]->content;
                         break;
                     case 'текст':
 						if(preg_match("#^http#i", $result->data[$i]->content))
-							$attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+							$attachment = VKAPI::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
 						else
 							$message .= "\r\n" . $result->data[$i]->content;
                         break;

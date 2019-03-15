@@ -10,7 +10,7 @@
  */
 
 namespace MainModule;
-class Api {
+class VKAPI {
 
 	/**
 	 * Отправляет сообщение одному пользователю.
