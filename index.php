@@ -36,13 +36,13 @@ spl_autoload_register
 		$fileFullName = $siteRoot . DIRECTORY_SEPARATOR . $classFullName . '.php';
 
 		if (!file_exists($fileFullName)) {
-			throw new \Exception ('File ' . $fileFullName . ' not found!');
+			throw new \Exception (__FILE__ . " : " . __LINE__ . 'File ' . $fileFullName . ' not found!');
 		}
 
 		require_once($fileFullName);
 
 		if (!class_exists($className)) {
-			throw new \Exception ('Class ' . $className . ' not found!');
+			throw new \Exception (__FILE__ . " : " . __LINE__ . 'Class ' . $className . ' not found!');
 		}
 	}
 );
