@@ -33,7 +33,7 @@ class RequestHandler {
 		}
 
 		if (!isset($data->secret) or $data->secret != SECRET_KEY)
-			throw new \Exception(__FILE__ . " : " . __LINE__ . "Ключ не соответствует");
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " Ключ не соответствует");
 
 
 		switch ($data->type)

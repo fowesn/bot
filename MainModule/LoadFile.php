@@ -51,7 +51,7 @@ class LoadFile {
 	private static function getDocument($document_path) {
 		ini_set("allow_url_fopen", true);
 		if (!fopen($document_path, "r"))
-			throw new \Exception(__FILE__ . " : " . __LINE__ . "File not found " . $document_path);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " File not found " . $document_path);
 		$mimeType = mime_content_type($document_path);
 		ob_start();
 		ob_clean();
