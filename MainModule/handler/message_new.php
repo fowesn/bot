@@ -33,7 +33,7 @@ class message_new
         //разделение сообщения пользователя на массив слов
         $user_message = explode(' ', $user_message);*/
 
-        switch ( $user_message[0] )
+        switch ($user_message[0])
         {
             case 'фото':
 				$result = VKAPI::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');

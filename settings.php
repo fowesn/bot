@@ -26,7 +26,7 @@ define("HOST_API", 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/');
 define("SERVER_ERROR_MESSAGE", 'Что-то пошло не так. Попробуй снова!');
 define("LOG","log.log");
 if(!file_exists(LOG)) {
-	echo "tut";
+	//echo "tut";
 	if (!($fp = fopen(LOG, "w+")))
 		echo "error";
 	else {
