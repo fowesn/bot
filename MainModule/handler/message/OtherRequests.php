@@ -57,6 +57,7 @@ class OtherRequests
     /**
      * @param $userId
      * @param $preferredResource
+     * @return array
      * @throws \Exception
      */
     public static function setUserPreferredResource($userId, $preferredResource)
