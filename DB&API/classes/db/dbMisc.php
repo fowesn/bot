@@ -8,59 +8,37 @@
 
 class dbMisc
 {
-    /**
-     * @return array Contains category names available
+
+    /** Возвращает глобальный идентификатор пользователя по имени сервиса и идентификатору пользователя в указанном сервисе
+     *
+     * @param $user integer Идентификатор пользователя в указанном сервисе
+     * @param $service string Используемый сервис
+     * @return integer Глобальный идентификатор пользователя
+     * @throws Exception Внутренняя ошибка
      */
-    public static function getProblemTypes()
+    public static function getGlobalUserId ($user, $service)
     {
         $conn = dbConnection::getConnection();
-        $stmt = $conn->query('SELECT problem_type_code FROM problem_type');
-        $resources = array();
-        while ($row = $stmt->fetch())
-        {
-            $resources[] = $row['problem_type_code'];
-        }
-        
-        $conn = null;
-        return $resources;
-    }
 
-    /**
-     * @param $user_id Id of a user in service used
-     * @param $service Source of request that uses API (VK/tg/...)
-     * @return mixed Global id of the user
-     * @throws Exception System errors
-     */
-    public static function getGlobalUserId ($user_id, $service)
-    {
-        $conn = dbConnection::getConnection();
-        
-        $columns = array('vk' => 'user_vk_id', 'tg' => 'user_tg_id');
-
-        if ($user_id === null || !is_numeric($user_id))
+        // проверка существования сервиса
+        if (SERVICES[$service] === null)
         {
-            throw new Exception('Invalid parameter: user_id ' . ($user_id === null ? 'NULL' : $user_id) . '; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+            throw new Exception('Service ' . $service . ' is not supported; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        // Check whether the stated service exists
-        if (!isset($columns[$service]))
-        {
-            throw new Exception('Platform ' . $service . ' is not supported', 404);
-        }
+        $query = $conn->prepare('SELECT user_id FROM user WHERE ? = ?');
+        $query->bindParam('1', SERVICES[$service], PDO::PARAM_STR);
+        $query->bindParam('2', $user, PDO::PARAM_INT);
+        $query->execute();
 
-        $query = 'SELECT user_id FROM user WHERE ' . $columns[$service] . ' = ?';
-        $stmt = $conn->prepare($query);
-        $stmt->execute(array($user_id));
-        unset($query);
-
-        // Register the user, if the stated user_id does not exist
-        // Otherwise return "global" user_id
-        if (($global_user_id = $stmt->fetch()['user_id']) === null)
+        // Если указанный user_id не существует, то регистрируем пользователя
+        // Иначе, возвращаем глобальный user_id
+        if (($global_user_id = $query->fetch()['user_id']) === null)
         {
-            $query = 'INSERT INTO user (user_created, preferred_resource_type, ' . $columns[$service] . ') VALUES (NOW(), 1, ?)';
-            $stmt = $conn->prepare($query);
-            $stmt->execute(array($user_id));
-            // Get an id of last inserted record
+            $query = 'INSERT INTO user (user_created, preferred_resource_type, ' . SERVICES[$service] . ') VALUES (NOW(), 1, ?)';
+            $query = $conn->prepare($query);
+            $query->execute(array($user));
+            // получение первичного ключа последней добавленной записи
             $global_user_id = $conn->lastInsertId();
         }
 

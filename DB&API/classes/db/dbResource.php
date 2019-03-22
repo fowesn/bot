@@ -8,8 +8,9 @@
 
 class dbResource
 {
-    /**
-     * @return array Names of resource types available
+    /** Получает доступные типы ресурсов для установления предпочитаемого ресурса
+     *
+     * @return array Названия доступных типов ресурсов
      */
     public static function getResourceTypes()
     {
@@ -34,53 +35,61 @@ class dbResource
     public static function getPreferredResource ($user_id, $resource_collection_id)
     {
         $conn = dbConnection::getConnection();
-                
-        $stmt = $conn->prepare('SELECT resource_collection_id FROM resource_collection WHERE resource_collection_id = ?');
-        $stmt->execute(array($resource_collection_id));
-        if (empty($stmt->fetch()['resource_collection_id']))
+
+        // проверка существования коллекции
+        $query = $conn->prepare('SELECT resource_collection_id FROM resource_collection WHERE resource_collection_id = ?');
+        $query->execute(array($resource_collection_id));
+        // fetch() вернет ассоциативный массив или FALSE, если записей не найдено
+        // попытка обратиться к FALSE по ключу вернет null
+        if (($query->fetch()['resource_collection_id']) === null)
         {
-          throw new Exception ('Invalid parameter: resource_collection_id ' . ($resource_collection_id === null ? 'NULL' : $resource_collection_id) . ' not found in \'resource_collection\'; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+          throw new Exception ('resource_collection_id ' . ($resource_collection_id === null ? 'NULL' : $resource_collection_id) . ' not found in \'resource_collection\'; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        $stmt = $conn->prepare('SELECT preferred_resource_type FROM user WHERE user_id = ?');
-        $stmt->execute(array($user_id));
-        $pref = $stmt->fetch()['preferred_resource_type'];
+        // проверка существования пользователя и получение предпочитаемого типа ресурса
+        $query = $conn->prepare('SELECT preferred_resource_type FROM user WHERE user_id = ?');
+        $query->execute(array($user_id));
         
-        if ($pref === null) 
+        if (($preferred_resource_type = $query->fetch()['preferred_resource_type']) === null)
         {
-          throw new Exception ('Invalid parameter: user_id ' . ($user_id === null ? 'NULL' : $user_id) . ' not found in \'user\'; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+          throw new Exception ('user_id ' . ($user_id === null ? 'NULL' : $user_id) . ' not found in \'user\'; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        $stmt = $conn->prepare('SELECT resource.resource_name AS name, resource_type.resource_type_code AS type, resource.resource_content AS content 
+        // получаем ресурсы предпочитаемого типа из указанной коллекции
+        $query = $conn->prepare('SELECT resource.resource_name AS resource_name, resource_type.resource_type_code AS resource_type, resource.resource_content AS resource_content 
                                 FROM resource
                                 INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
                                 WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
-        $stmt->execute(array($resource_collection_id, $pref));
+        $query->execute(array($resource_collection_id, $preferred_resource_type));
         $resources = array();
-        while ($row = $stmt->fetch())
+        while ($row = $query->fetch())
         {
             $resources[] = $row;
         }
 
-        // There can be no resources preferred by user in the collection, remember that!
+        // если массив resources оказался пустой, значит в колллекции не нашлось предпочитаемого типа ресурса
         if (empty($resources))
         {
-            $stmt = $conn->prepare('SELECT resource_type.resource_type_id FROM resource_type 
+            // получаем типы ресурсов, кроме предпочитаемого
+            $query = $conn->prepare('SELECT resource_type.resource_type_id FROM resource_type 
                                     WHERE NOT resource_type.resource_type_id = ?');
-            $stmt->execute(array($pref));
-            while ($row = $stmt->fetch()['resource_type_id'])
+            $query->execute(array($preferred_resource_type));
+
+            // для полученных типов ресурсов пытаемся извлечь ресурсы из коллекции
+            while ($row = $query->fetch()['resource_type_id'])
             {
-                 $stmt_ = $conn->prepare('SELECT resource.resource_name AS name, resource_type.resource_type_code AS type, resource.resource_content AS content 
+                $query = $conn->prepare('SELECT resource.resource_name AS resource_name, resource_type.resource_type_code AS resource_type, resource.resource_content AS resource_content 
                                 FROM resource
                                 INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
                                 WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
-                $stmt_->execute(array($resource_collection_id, $row));
-                
-                while ($row = $stmt_->fetch())
+                $query->execute(array($resource_collection_id, $row));
+
+                while ($row = $query->fetch())
                 {
                     $resources[] = $row;
                 }
-                
+
+                // если для указанного типа ресурса нашлись ресурсы, возвращаем их
                 if (empty($resources) === FALSE)
                 {
                     return $resources;
@@ -88,51 +97,46 @@ class dbResource
             }
         }
              
-        $conn = null;
+        unset ($conn);
+
         return $resources;
     }
 
+
     /**
-     * @param $user_id Global id of the user who's setting preferred resource
-     * @param $resource_type_code Type of preferred resource
-     * @return bool Indicates whether method worked successfully
-     * @throws Exception System error
-     * @throws UserExceptions Depends on user's actions
+     * @param $user_id integer Глобальный идентификатор пользователя
+     * @param $resource_type_code string Тип предпочитаемого ресурса
+     * @throws UserException Указанный тип ресурса не найден
+     * @throws Exception Внутренняя ошибка
      */
     public static function setPreferredResource ($user_id, $resource_type_code)
     {
         $conn = dbConnection::getConnection();
 
-        $stmt = $conn->prepare('SELECT user_id FROM user WHERE user_id = ?');
-        $stmt->execute(array($user_id));
-        if (empty($stmt->fetch()['user_id']))
+        $query = $conn->prepare('SELECT user_id FROM user WHERE user_id = ?');
+        $query->execute(array($user_id));
+        // fetch() вернет ассоциативный массив или FALSE, если записей не найдено
+        // попытка обратиться к FALSE по ключу вернет null
+        if (($query->fetch()['user_id']) === null)
         {
-          throw new Exception ('Invalid parameter: user_id ' . ($user_id === null ? 'NULL' : $user_id) . ' not found in \'user\'; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+          throw new Exception ('user_id ' . ($user_id === null ? 'NULL' : $user_id) . ' not found in \'user\'; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        
-        if ($resource_type_code === null)
-        {
-            throw new Exception('Invalid parameter: resource_type_code is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
-        }   
-            
+        $query = $conn->prepare('SELECT resource_type_id FROM resource_type WHERE resource_type_code = ?');
+        $query->execute(array($resource_type_code));
 
-        $stmt = $conn->prepare('SELECT resource_type_id FROM resource_type WHERE resource_type_code = ?');
-        $stmt->execute(array($resource_type_code));
-
-        // Resources with stated type does not exist
-        if (empty($resource_type_id = $stmt->fetch()['resource_type_id']))
+        // Указанного типа ресурса не существует
+        // fetch() вернет ассоциативный массив или FALSE, если записей не найдено
+        // попытка обратиться к FALSE по ключу вернет null
+        if (($resource_type_id = $query->fetch()['resource_type_id']) === null)
         {
-            throw new UserExceptions("Такого вида ресурса у меня нет :(
-	    Чтобы установить ресурс, которые тебе нравится, напиши \"ресурс [название ресурса]\"", 5);
+            throw new UserException(RESOURCE_TYPE_NOT_FOUND, RESOURCE_TYPE_NOT_FOUND_MSG, 200);
         }
 
-        $stmt = $conn->prepare('UPDATE user SET preferred_resource_type = ? WHERE user_id = ?');
-        $stmt->execute(array($resource_type_id, $user_id));
+        $query = $conn->prepare('UPDATE user SET preferred_resource_type = ? WHERE user_id = ?');
+        $query->execute(array($resource_type_id, $user_id));
         
-        $conn = null;
-        return true;
-
+        unset ($conn);
     }
 }
 ?>

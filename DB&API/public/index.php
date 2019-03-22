@@ -9,7 +9,7 @@ $app = new \Slim\App();
 
 $container = $app->getContainer();
 
-$container['logger'] = function ($c)
+$container['logger'] = function ()
 {
     $logger = new \Monolog\Logger('APIlogger');
     $file_handler = new \Monolog\Handler\StreamHandler('../logs/app.log');
@@ -17,203 +17,665 @@ $container['logger'] = function ($c)
     return $logger;
 };
 
-$container['errorHandler'] = function ($c)
+// обработчик пользовательских исключительных ситуаций, возникающих в модулях работы с БД
+// например: кончились задания для выдачи пользователю, тема заданий не обнаружена...
+$container['errorHandler'] = function ()
 {
-    return function ($request, $response, $exception) use ($c) {
-        // error caused by user's actions
-        if ($exception instanceof UserExceptions)
+    return function ($request, $response, $exception) {
+        if ($exception instanceof UserException)
         {
-            return $c['response']->withJson(array ('success' => 'false',
-                'error' => ["code" => $exception->getCode(),
-                    "message" => $exception->getMessage()]), 200, JSON_UNESCAPED_UNICODE);
+            return $response->withJson(array(
+                'status' => $exception->jsonStatus,
+                'data' => [
+                    'message' => $exception->getMessage()
+                ]), $exception->getCode(), JSON_UNESCAPED_UNICODE);
         }
-        // otherwise, system error
-        $c->logger->addInfo($exception->getMessage());
-        return $c['response']->withStatus($exception->getCode())
-            ->withHeader('Content-Type', 'text/html')
-            ->write('Something went wrong!');
+        else
+        {
+            return $response->withJson(array(
+                'status' => ERROR,
+                'data' => [
+                    'message' => 'Server error occurred, please try again later!'
+                ]), 500, JSON_UNESCAPED_UNICODE);
+        }
     };
 };
 
-$app->get('/problems/problem', function (Request $request, Response $response)
+// обработчик ошибок, возникающих при неправильно составленном запросе
+$container['requestErrorHandler'] = function ()
 {
-    $type = $request->getQueryParam('type', null);
-    $user_id = $request->getQueryParam('user_id', null);
-    $service = $request->getQueryParam('service', null);
+    return function ($response, $message, $httpStatus, $jsonStatus = ERROR)
+    {
+        return $response->withJson(array(
+            'status' => $jsonStatus,
+            'data' => [
+                'message' => $message
+            ]), $httpStatus, JSON_UNESCAPED_UNICODE);
+    };
+};
 
-    if ($type === null)
-    {
-        throw new Exception("Invalid parameter: type is NULL; index file, line: " . __LINE__, 404);
-    }
-    if ($user_id === null)
-    {
-        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
-    }
-    if ($service === null)
-    {
-        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
-    }
-
-    $user_id = dbMisc::getGlobalUserId($user_id, $service);
-
-    if (is_numeric($type))
-    {
-        $data = dbProblem::getProblemByNumber($user_id, (int)$type);
-    }
-    elseif ($type === 'random')
-    {
-        $data = dbProblem::getProblem($user_id);
-    }
-    else
-    {
-        $data = dbProblem::getProblemByType($user_id, mb_convert_encoding($type, "utf-8", mb_detect_encoding($type)));
-    }
-	
-    $problem = $data['problem'];
-    unset ($data["problem"]);
-    $answer = array ('success' => 'true' , 'problem' => $problem,'data' => $data);
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
-});
-
-$app->get('/problems/solution', function (Request $request, Response $response)
+// 404 - указанный ресурс не найден
+// переопределение существующего обработчика Slim
+$container['notFoundHandler'] = function ()
 {
-    $problem_id = $request->getQueryParam('problem_id', null);
-    $user_id = $request->getQueryParam('user_id', null);
-    $service = $request->getQueryParam('service', null);
 
-    if ($problem_id === null)
+    return function ($request, $response)
     {
-        throw new Exception("Invalid parameter: problem_id is NULL; index file, line: " . __LINE__, 404);
-    }
+        return $response->withJson(array(
+            'status' => ERROR,
+            'data' => [
+                'message' => 'URI not found!'
+            ]), 404, JSON_UNESCAPED_UNICODE);
+    };
+};
 
-    if ($user_id === null)
-    {
-        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
-    }
-
-    if ($service === null)
-    {
-        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
-    }
-
-    $user_id = dbMisc::getGlobalUserId($user_id, $service);
-
-    $data = dbResult::getSolution($user_id, $problem_id);
-    $answer = array ('success' => 'true' , 'data' => $data);
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
-});
-
-$app->get('/problems/answer', function (Request $request, Response $response)
+// 405 - данный ресурс не поддерживает указанное действие
+// переопределение существующего обработчика Slim
+$container['notAllowedHandler'] = function ()
 {
-    $problem_id = $request->getQueryParam('problem_id', null);
-    $user_id = $request->getQueryParam('user_id', null);
-    $service = $request->getQueryParam('service', null);
+    return function ($request, $response, $methods) {
 
-    if ($problem_id === null)
+        return $response->withHeader('Allow', implode(', ', $methods))
+            ->withJson(array(
+                'status' => ERROR,
+                'data' =>[
+                    'message'=> 'Method must be one of: ' . implode(', ', $methods) . '!',
+                ]), 405, JSON_UNESCAPED_UNICODE);
+    };
+};
+
+// 500 - внутренняя ошибка сервера
+// переопределение существующего обработчика Slim
+$container['phpErrorHandler'] = function ($c)
+{
+    return function ($request, $response, $error) use ($c)
     {
-        throw new Exception("Invalid parameter: problem_id is NULL; index file, line: " . __LINE__, 404);
-    }
+        $c->logger->addInfo($error->getMessage());
+        return $response->withJson(array(
+            'status' => ERROR,
+            'data' => [
+                'message' => 'Server error occurred, please try again later!'
+            ]), 500, JSON_UNESCAPED_UNICODE);
+    };
+};
 
-    if ($user_id === null)
-    {
-        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
-    }
 
-    if ($service === null)
-    {
-        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
-    }
 
-    $user_id = dbMisc::getGlobalUserId($user_id, $service);
+// запрос задания
+$app->post('/assignments', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
 
-    $data = dbResult::getAnswer($user_id, $problem_id);
-    $answer = array ('success' => 'true' , 'answer' => $data);
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
-});
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
 
-$app->post('/problems/answer', function (Request $request, Response $response)
-{   
-    $problem_id = $request->getParam('problem_id', null);
-    $user_answer = $request->getParam('answer', null);
-    $user_id = $request->getParam('user_id', null);
+    // тело запроса (все параметры)
+    $requestBody = $request->getParsedBody();
+
+    // обязательные параметры
+    $user = $request->getParam('user', null);
     $service = $request->getParam('service', null);
+    // необязательный параметр
+    $filter = $request->getParam('filter', null);
+    unset ($requestBody['filter']);
 
-    if ($problem_id === null) 
+    // валидация параметра user
+    if ($user === null)
     {
-        throw new Exception("Invalid parameter: problem_id is NULL; index file, line: " . __LINE__, 404);
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($requestBody['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
     }
 
-    if ($user_answer === null) 
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
     {
-        throw new Exception("Invalid parameter: user_answer is NULL; index file, line: " . __LINE__, 404);
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($requestBody['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($requestBody) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($requestBody))),
+            400);
     }
 
-    if ($user_id === null) 
-    {
-        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
-    }
 
-    if ($service === null) 
-    {
-        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
-    }
-    $user_id = dbMisc::getGlobalUserId($user_id, $service);
-    if (checkAnswer::checkB(dbAssignment::assignAnswer($user_id, $problem_id, $user_answer), $user_answer)) 
-    {
-        $user_answer = array ('success' => 'true' , 'result' => true);
-    } 
-    else 
-    {
-        $user_answer = array ('success' => 'true' , 'result' => false);
-    }
-    $response = $response->withJson($user_answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+
+
+    return $response->write('boob');
 });
 
-$app->get('/resources/resource', function (Request $request, Response $response)
-{   
-    $data = dbResource::getResourceTypes();
-    $answer = array ('success' => 'true' , 'data' => $data);
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
+// запрос статистики по заданию
+$app->get('/assignments', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // обязательные параметры
+    $user = $request->getQueryParam('user', null);
+    $service = $request->getQueryParam('service', null);
+    $problem = $request->getQueryParam('problem', null);
+
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($queryParams['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // валидация параметра problem
+    if ($problem === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'problem'),
+            400);
+    }
+    unset ($queryParams['problem']);
+    if (!ctype_digit($problem))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'problem', 'non-negative integer'),
+            400);
+    }
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($queryParams['service']);
+
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
 });
 
-$app->put('/resources/resource', function (Request $request, Response $response)
-{   
-    $user_id = $request->getParam('user_id', null);
+// запрос количества (выданных/решенных/нерешенных) заданий
+$app->get('/assignments/count', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // обязательные параметры
+    $user = $request->getQueryParam('user', null);
+    $service = $request->getQueryParam('service', null);
+
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($queryParams['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($queryParams['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+
+});
+
+// проверка ответа пользователя
+$app->post('/assignments/answer', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // тело запроса (все параметры)
+    $requestBody = $request->getParsedBody();
+
+    // обязательные параметры
+    $user = $request->getParam('user', null);
     $service = $request->getParam('service', null);
-    $resource_type = urldecode($request->getParam('resource_type', null));
-    // нужно ли это??
-    $resource_type = mb_convert_encoding($resource_type, "utf-8", mb_detect_encoding($resource_type));
+    $problem = $request->getParam('problem', null);
+    $answer = $request->getParam('problem', null);
 
-    if ($user_id === null) {
-        throw new Exception("Invalid parameter: user_id is NULL; index file, line: " . __LINE__, 404);
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($requestBody['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
     }
 
-    if ($service === null) {
-        throw new Exception("Invalid parameter: service is NULL; index file, line: " . __LINE__, 404);
+    // валидация параметра problem
+    if ($problem === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'problem'),
+            400);
+    }
+    unset ($requestBody['problem']);
+    if (!ctype_digit($problem))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'problem', 'non-negative integer'),
+            400);
     }
 
-    if ($resource_type === null) {
-        throw new Exception("Invalid parameter: resource_type is NULL; index file, line: " . __LINE__, 404);
+    // валидация параметра answer
+    if ($answer === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'answer'),
+            400);
     }
-    $user_id = dbMisc::getGlobalUserId($user_id, $service);
-    dbResource::setPreferredResource($user_id, $resource_type);
-    
-    $answer = array ('success' => 'true');
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
+    unset ($requestBody['answer']);
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($requestBody['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($requestBody) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($requestBody))),
+            400);
+    }
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+
 });
 
-$app->get('/problem_types/problem_type', function (Request $request, Response $response)
-{   
-    $data = dbMisc::getProblemTypes();
-    $answer = array ('success' => 'true' , 'data' => $data);
-    $response = $response->withJson($answer, 200, JSON_UNESCAPED_UNICODE);
-    return $response;
+// запрос правильного ответа задания
+$app->get('/problems/{problem}/answer', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // обязательные параметры
+    $user = $request->getQueryParam('user', null);
+    $service = $request->getQueryParam('service', null);
+    $problem = $request->getAttribute('problem', null);
+
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($queryParams['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // валидация атрибута запроса problem
+    if (!ctype_digit($problem))
+    {
+        return $handler($response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($queryParams['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+
+});
+
+// запрос разбора задания
+$app->get('/problems/{problem}/solution', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // обязательные параметры
+    $user = $request->getQueryParam('user', null);
+    $service = $request->getQueryParam('service', null);
+    $problem = $request->getAttribute('problem', null);
+
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($queryParams['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // валидация атрибута запроса problem
+    if (!ctype_digit($problem))
+    {
+        return $handler($response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($queryParams['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+
+});
+
+// запрос условия задания
+$app->get('/problems/{problem}/statement', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // обязательные параметры
+    $user = $request->getQueryParam('user', null);
+    $service = $request->getQueryParam('service', null);
+    $problem = $request->getAttribute('problem', null);
+
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($queryParams['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // валидация атрибута запроса problem
+    if (!ctype_digit($problem))
+    {
+        return $handler($response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($queryParams['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+
+});
+
+// запрос доступных типов ресурсов
+$app->get('/resources', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // если тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+});
+
+// установление предпочитаемого типа ресурса
+$app->put('/resources', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // тело запроса (все параметры)
+    $requestBody = $request->getParsedBody();
+
+    // обязательные параметры
+    $user = $request->getParam('user', null);
+    $service = $request->getParam('service', null);
+    $resource_type = $request->getParam('resource_type', null);
+
+    // валидация параметра user
+    if ($user === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'user'),
+            400);
+    }
+    unset ($requestBody['user']);
+    if (!ctype_digit($user))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+            400);
+    }
+
+    // валидация парамтра resource_type
+    if ($resource_type === null)
+    {
+        return $handler($response,
+            sprintf(PARAMETER_REQUIRED, 'resource_type'),
+            400);
+    }
+    unset ($requestBody['resource_type']);
+    if (!ctype_alpha($resource_type))
+    {
+        return $handler($response,
+            sprintf(WRONG_PARAMETER_TYPE, 'resource', 'alphabetical characters only string'),
+            400);
+    }
+
+    // сервис не поддерживается
+    if (in_array($service, array_keys(SERVICES)) === false)
+    {
+        return $handler($response, WRONG_SERVICE, 400);
+    }
+    unset ($requestBody['service']);
+
+    // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
+    if (count($requestBody) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($requestBody))),
+            400);
+    }
+
+
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
+});
+
+// запрос доступных тем заданий
+$app->get('/problem_types', function (Request $request, Response $response)
+{
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
+
+    // экземпляр обработчика ошибок запроса
+    $handler = $this->get('requestErrorHandler');
+
+    // параметры запроса
+    $queryParams = $request->getQueryParams();
+
+    // если тело непустое, то оно содержит неизвестные параметры
+    if (count($queryParams) > 0)
+    {
+        return $handler($response,
+            sprintf(UNPROCESSABLE_PARAMETER, implode(', ', array_keys($queryParams))),
+            400);
+    }
+
+
+
+    /*
+     * ОБРАБОТКА ЗАПРОСА
+     */
 });
 
 $app->run();

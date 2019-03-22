@@ -6,47 +6,74 @@
  * Time: 13:21
  */
 
-class checkAnswer
+/** Интерфейс проверки ответа пользователя
+ *
+ * Interface checkAnswerTemplate
+ */
+interface checkAnswerInterface
 {
-    /**
-     * @param $assignment_id Id of an assignment, that may change
-     * @param $answer User's answer to check
-     * @return bool Indicates whether user's answer is correct
-     * @throws Exception System Error
+    public static function checkAnswer($problem_id, $user_answer);
+}
+
+
+
+/** Класс отвечает за проверку заданий с кратким ответом (часть B)
+ *
+ * Class checkShortAnswer
+ */
+class checkShortAnswer implements checkAnswerInterface
+{
+    /** Проверяет правильность ответа пользователя,
+     ** сравнивая ответ задания в БД с ответом, присланным пользователем
+     *
+     * @param $problem_id integer Идентификатор задания
+     * @param $user_answer string Ответ пользователя
+     * @return bool true, если ответ пользователя правильный, false - иначе
+     * @throws Exception Внутренняя ошибка
      */
-    public static function checkB ($assignment_id, $answer)
+    public static function checkAnswer($problem_id, $user_answer)
     {
         $conn = dbConnection::getConnection();
 
-        if ($answer === null)
+        // проверка существования задания
+        $query = $conn->prepare('SELECT problem_id FROM problem WHERE problem_id = ?');
+        $query->execute(array($problem_id));
+        if ($query->fetch()['problem_id'] === null)
         {
-            throw new Exception('Invalid parameter: answer is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__, 500);
+            throw new Exception('problem_id ' . ($problem_id === null ? 'NULL' : $problem_id) . ' not found in \'problem\'; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        $stmt = $conn->prepare('SELECT problem_id FROM assignment WHERE assignment_id = ?');
-        $stmt->execute(array($assignment_id));
-        $problem_id = $stmt->fetch()['problem_id'];
-        
-        if ($problem_id === null)
+        if (is_null($user_answer))
         {
-            throw new Exception('Invalid parameter: assignment_id ' . $assignment_id . ' not found in \'assignment\'; Method: ' . __METHOD__  . '; line: ' . __LINE__, 500);
+            throw new Exception('user_answer is NULL; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        $stmt = $conn->prepare('SELECT problem_answer FROM problem WHERE problem_id = ?');
-        $stmt->execute(array($problem_id));
+        $correct_answer = dbProblem::getAnswer($problem_id);
 
-        if ($stmt->fetch()['problem_answer'] === $answer)
+        unset ($conn);
+
+        // проверка правильности ответа пользователя
+        if ($user_answer == $correct_answer)
         {
-            $stmt = $conn->prepare('UPDATE assignment SET correct_answer_provided = 1 WHERE assignment_id = ?');
-            $stmt->execute(array($assignment_id));
-            
-            $conn = null;
             return true;
         }
-        
-        $conn = null;
-        return false;
 
+        return false;
     }
 }
+
+
+
+/** Класс отвечает за проверку заданий с развернутым ответом (часть C)
+ *
+ * Class checkDetailedAnswer
+ */
+class checkDetailedAnswer implements checkAnswerInterface
+{
+    public static function checkAnswer($problem_id, $user_answer)
+    {
+        // TODO: Implement checkAnswer() method.
+    }
+}
+
 ?>
