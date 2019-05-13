@@ -5,7 +5,7 @@
  * Date: 16.04.2018
  * Time: 23:36
  */
-namespace api\handler\message;
+namespace MainModule\handler\message;
 class UnidentifiedPartialRequests
 {
     public static function help()
@@ -37,7 +37,7 @@ class UnidentifiedPartialRequests
     }
     public static function resource()
     {
-        return "Чтобы установить ресурс, которые тебе нравится, напиши \"ресурс [название ресурса]\"\r\n
+        return "Чтобы установить ресурс, который тебе нравится, напиши \"ресурс [название ресурса]\"\r\n
                 Чтобы посмотреть список всех команд, которые я понимаю, напиши \"помощь\"";
     }
     public static function answer()

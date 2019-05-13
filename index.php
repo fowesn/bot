@@ -1,14 +1,8 @@
 <?php
 
 namespace project;
-//Как я понял, это проверка на то,что скрипт не запушен через shell, ну хотя кто его знает
-//вторая догадка, возможно не существует массива $_GET если перейти по ссылки на страницу без параметров
 
-use api\CallbackApi;
-use api\EventNotSupported;
-use api\RequestError;
-use api\SecurityBreach;
-
+use MainModule\RequestHandler;
 if (!isset($_REQUEST)) {
     return;
 }
@@ -16,7 +10,8 @@ if (!isset($_REQUEST)) {
 /*
  * Подключение модулей
  */
-include_once("setting.php");
+include_once("settings.php");
+
 //////////////AutoLoader//////////////////////////
 
 spl_autoload_register
@@ -41,39 +36,28 @@ spl_autoload_register
 		$fileFullName = $siteRoot . DIRECTORY_SEPARATOR . $classFullName . '.php';
 
 		if (!file_exists($fileFullName)) {
-			throw new \Exception ('File ' . $fileFullName . ' not found!');
+			throw new \Exception (__FILE__ . " : " . __LINE__ . ' File ' . $fileFullName . ' not found!');
 		}
 
 		require_once($fileFullName);
 
 		if (!class_exists($className)) {
-			throw new \Exception ('Class ' . $className . ' not found!');
+			throw new \Exception (__FILE__ . " : " . __LINE__ . ' Class ' . $className . ' not found!');
 		}
 	}
 );
 
-
-
 /////////////////////////////////////////////////
+
 $data = json_decode(file_get_contents('php://input'));
 
 
 try {
-
-	CallbackApi::requestHandler($data);
-
-} catch (SecurityBreach $err) {
-	//echo $err->getMessage();
-	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
-
-} catch (EventNotSupported $err) {
-//	echo $err->getMessage();
-	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
-
+	RequestHandler::requestHandler($data);
 } catch (\Exception $err) {
-//	$err->getMessage();
-	file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
-}finally {
+    //echo $err->getMessage();
+    file_put_contents(LOG, $err->getMessage() ." ".$err->getCode(). "\r\n", FILE_APPEND);
+} finally {
 	echo "ok";
 }
 ?>

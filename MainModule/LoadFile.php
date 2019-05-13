@@ -6,7 +6,7 @@
  * Time: 0:00
  */
 
-namespace api;
+namespace MainModule;
 
 
 class LoadFile {
@@ -51,7 +51,7 @@ class LoadFile {
 	private static function getDocument($document_path) {
 		ini_set("allow_url_fopen", true);
 		if (!fopen($document_path, "r"))
-			throw new \Exception(__FILE__ . " : " . __LINE__ . "File not found " . $document_path);
+			throw new \Exception(__FILE__ . " : " . __LINE__ . " File not found " . $document_path);
 		$mimeType = mime_content_type($document_path);
 		ob_start();
 		ob_clean();
@@ -81,7 +81,7 @@ class LoadFile {
 		/** https */
 		$fp = fsockopen("ssl://" . $server["host"], 443, $errno, $errstr, 5);
 		if (!$fp)
-			throw new RequestError(__FILE__ . ":" . __LINE__ . "проблемы с сокетом" . $server["host"]);
+			throw new \Exception(__FILE__ . ":" . __LINE__ . "проблемы с сокетом" . $server["host"]);
 		/** @var string разделитель полей на сокете $boundary */
 		$boundary = md5(uniqid(time()));
 		/** подготовка контента */

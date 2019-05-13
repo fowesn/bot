@@ -6,20 +6,19 @@
  * Time: 14:39
  */
 
-namespace api\handler\message;
+namespace MainModule\handler\message;
 
-use api\Api;
+use MainModule\VKAPI;
 
 class Task
 {
     private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
-    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/problems/problem?';
+    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/problems/problem?';
 
     /**
      * @param $userId
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
      */
     public static function getRandomTaskMessage($userId)
     {
@@ -33,7 +32,6 @@ class Task
      * @param $theme
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
      */
     public static function getThemeTaskMessage($userId, $theme) {
         if(!isset($userId))
@@ -48,7 +46,6 @@ class Task
      * @param $KIMid
      * @return array
      * @throws \Exception
-     * @throws \api\RequestError
      */
     public static function getKIMTaskMessage($userId, $KIMid) {
         if(!isset($userId))
@@ -63,7 +60,6 @@ class Task
 	 * @param $type - тип запроса задания к апи
 	 * @param $userId - ид пользователя
 	 * @return array - параметры запроса к вк апи
-	 * @throws \api\RequestError - ошибки запроса при обращении к вк апи
 	 * @throws \Exception
 	 */
     private static function getTask($type, $userId)
@@ -103,19 +99,19 @@ class Task
                 switch ($result->data[$i]->type) {
                     case 'pdf-файл':
                         // тут нужен attachment документа
-                        $attachment = Api::documentAttachmentMessageSend($userId, $result->data[$i]->content,
+                        $attachment = VKAPI::documentAttachmentMessageSend($userId, $result->data[$i]->content,
                             "задание " . $uniqueNumber, "бот по информатике");
                         break;
                     case 'изображение':
                         // attachment изображения
-                        $attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+                        $attachment = VKAPI::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
                         break;
                     case 'ссылка':
                         $message .= "\r\n" . $result->data[$i]->content;
                         break;
                     case 'текст':
 						if(preg_match("#^http#i", $result->data[$i]->content))
-							$attachment = Api::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+							$attachment = VKAPI::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
 						else
 							$message .= "\r\n" . $result->data[$i]->content;
                         break;

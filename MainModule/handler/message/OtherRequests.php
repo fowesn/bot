@@ -6,11 +6,11 @@
  * Time: 14:39
  */
 
-namespace api\handler\message;
+namespace MainModule\handler\message;
 class OtherRequests
 {
     private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
-    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/';
+    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/';
     public static function getThemesList() {
         $url = self::$url . 'problem_types/problem_type';
         //проверка кодов http
@@ -57,6 +57,7 @@ class OtherRequests
     /**
      * @param $userId
      * @param $preferredResource
+     * @return array
      * @throws \Exception
      */
     public static function setUserPreferredResource($userId, $preferredResource)
@@ -69,7 +70,7 @@ class OtherRequests
 
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/resources/resource');
+        curl_setopt($ch, CURLOPT_URL, 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/resources/resource');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_query);

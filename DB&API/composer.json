@@ -1,6 +1,0 @@
-{
-    "require": {
-        "slim/slim": "^3.9",
-        "slim/pdo": "^1.10"
-    }
-}
