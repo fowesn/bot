@@ -10,7 +10,7 @@ namespace MainModule\handler\message;
 class Answer
 {
 	private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
-	private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/problems/';
+	private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/problems/';
 
     /**
      * @param $userId

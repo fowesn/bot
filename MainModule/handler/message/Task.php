@@ -13,7 +13,7 @@ use MainModule\VKAPI;
 class Task
 {
     private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
-    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/public/index.php/problems/problem?';
+    private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/problems/problem?';
 
     /**
      * @param $userId
