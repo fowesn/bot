@@ -10,23 +10,23 @@ namespace MainModule\handler\message;
 class Answer
 {
 	private static $server_error_message = "Что-то пошло не так. Попробуй снова!";
-	private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/problems/';
+	//private static $url = 'http://kappa.cs.petrsu.ru/~nestulov/API/v1/public/index.php/problems/';
 
     /**
-     * @param $userId
+     * @param $userID
      * @param $taskId
      * @return array
      * @throws \Exception
      */
-	public static function getAnswer($userId, $taskId) {
-	    if(!isset($userId))
+	public static function getAnswer($userID, $taskId) {
+	    if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-		$task = (int)$userId ^ (int)$taskId;
-		$params = array("problem_id" => $task, "user_id" => $userId, "service" => "vk");
+		$task = (int)$userID ^ (int)$taskId;
+		$params = array("problem_id" => $task, "user_id" => $userID, "service" => "vk");
 		$request_params = http_build_query($params);
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, self::$url . 'answer?' . $request_params);
+		curl_setopt($ch, CURLOPT_URL, HOST_API . '/problems/answer?' . $request_params);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
 		$result = curl_exec($ch);
 		$result = json_decode($result);
@@ -34,7 +34,7 @@ class Answer
 		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($code != 200) {
 			$message = $code . ". " . self::$server_error_message;
-			return array("user_id" => $userId, "message" => $message);
+			return array("user_id" => $userID, "message" => $message);
 		}
 
 		//ошибки пользователя
@@ -44,24 +44,24 @@ class Answer
 			// если ошибок нет, то собирается сообщение с ответом
 			$message = $result->answer;
 		}
-		return array("user_id" => $userId, "message" => $message);
+		return array("user_id" => $userID, "message" => $message);
 	}
 
     /**
-     * @param $userId
-     * @param $taskId
+     * @param $userID
+     * @param $taskID
      * @return array
      * @throws \Exception
      */
-	public static function getAnalysis($userId, $taskId) {
-        if(!isset($userId))
+	public static function getAnalysis($userID, $taskID) {
+        if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-		$task = (int)$userId ^ (int)$taskId;
-		$params = array("problem_id" => $task, "user_id" => $userId, "service" => "vk");
+		$task = (int)$userID ^ (int)$taskID;
+		$params = array("problem_id" => $task, "user_id" => $userID, "service" => "vk");
 		$request_params = http_build_query($params);
 
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, self::$url . 'solution?' . $request_params);
+		curl_setopt($ch, CURLOPT_URL, HOST_API . '/problems/solution?' . $request_params);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
 		$result = curl_exec($ch);
 		$result = json_decode($result);
@@ -69,7 +69,7 @@ class Answer
 		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($code != 200) {
 			$message = $code . ". " . self::$server_error_message;
-			return array("user_id" => $userId, "message" => $message);
+			return array("user_id" => $userID, "message" => $message);
 		}
 
 		//ошибки пользователя
@@ -82,19 +82,19 @@ class Answer
 				switch ($result->data[$i]->type) {
 					case 'pdf-файл':
 						// тут нужен attachment документа
-						$attachment = \MainModule\VKAPI::documentAttachmentMessageSend($userId,$result->data[$i]->content,
-							"разбор " . $taskId, "бот по информатике");
+						$attachment = \MainModule\VKAPI::documentAttachmentMessageSend($userID,$result->data[$i]->content,
+							"разбор " . $taskID, "бот по информатике");
 						break;
 					case 'изображение':
 						// attachment изображения
-						$attachment = \MainModule\VKAPI::pictureAttachmentMessageSend($userId,$result->data[$i]->content);
+						$attachment = \MainModule\VKAPI::pictureAttachmentMessageSend($userID,$result->data[$i]->content);
 						break;
 					case 'ссылка':
 						$message = $result->data[$i]->content;
 						break;
 					case 'текст':
 						if(preg_match("#^http#i", $result->data[$i]->content))
-							$attachment = \MainModule\VKAPI::pictureAttachmentMessageSend($userId, $result->data[$i]->content);
+							$attachment = \MainModule\VKAPI::pictureAttachmentMessageSend($userID, $result->data[$i]->content);
 						else
 							$message .= "\r\n" . $result->data[$i]->content;
 						break;
@@ -103,28 +103,27 @@ class Answer
 				}
 		}
 		if(isset($attachment))
-            return array("user_id" => $userId, "message" => $message, "attachment" => $attachment);
+            return array("user_id" => $userID, "message" => $message, "attachment" => $attachment);
 		else
-            return array("user_id" => $userId, "message" => $message);
+            return array("user_id" => $userID, "message" => $message);
 	}
 
     /**
-     * @param $userId
-     * @param $taskId
+     * @param $userID
+     * @param $taskID
      * @param $answer
      * @return array
      * @throws \Exception
      */
-	public static function checkUserAnswer($userId, $taskId, $answer) {
-        if(!isset($userId))
+	public static function checkUserAnswer($userID, $taskID, $answer) {
+        if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
 		// post
-		$task = (int)$userId ^ (int)$taskId;
-		$params = array("problem_id" => $task, "answer" => $answer, "user_id" => $userId, "service" => "vk");
+		$task = (int)$userID ^ (int)$taskID;
+		$params = array("problem_id" => $task, "answer" => $answer, "user_id" => $userID, "service" => "vk");
 		$request_params = http_build_query($params);
-		//$message = self::$url . "answer?" . $request_params;
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, self::$url . 'answer');
+		curl_setopt($ch, CURLOPT_URL, HOST_API . '/problems/answer');
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $request_params);
@@ -136,7 +135,7 @@ class Answer
 //        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 //        if ($code !== 200) {
 //            $message = $code . ". " . self::$server_error_message;
-//            return array("user_id" => $userId, "message" => $message);
+//            return array("user_id" => $userID, "message" => $message);
 //        }
 
 		//ошибки пользователя
@@ -146,7 +145,7 @@ class Answer
 			// если ошибок нет, то собирается сообщение с результатом проверки ответа пользователя
 			$message = (bool)($result->result) ? "Верно" : "Неверно";
 		}
-        return array("user_id" => $userId, "message" => $message);
+        return array("user_id" => $userID, "message" => $message);
 
 	}
 }
