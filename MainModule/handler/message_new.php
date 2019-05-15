@@ -229,6 +229,7 @@ class message_new
             case 'спасибо':
                 VKAPI::messageSend(array("user_id" => $data->object->user_id,
                     "message" => message\Intelligence::thanks()));
+                break;
 
 
             /////////////////////                      ТЕСТОВЫЕ КОМАНДЫ                    /////////////////////
@@ -236,13 +237,14 @@ class message_new
 
             ///////             Тест                 ///////
 			case "тест":
-				//$result = VKAPI::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+				/*//$result = VKAPI::pictureAttachmentMessageSend($data->object->user_id, 'https://www.google.ru/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
                 $reflector = new \ReflectionClass('message_new');
                 $result = $reflector->getFileName() . $reflector->getStartLine();
 
                 VKAPI::messageSend(array("user_id" => $data->object->user_id,
 				//"message" => file_get_contents("http://kappa.cs.petrsu.ru/~omelchen/vk/bot/lotoftext"),"attachment" => $result));
-                "message" => $result));
+                "message" => $result));*/
+				VKAPI::messageSend(array("user_id" => $data->object->user_id, "message" => self::setUnderscore($user_message)));
 				break;
 
 
