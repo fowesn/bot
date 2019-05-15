@@ -52,4 +52,3 @@ class dbConnection
         return self::$conn;
     }
 }
-?>

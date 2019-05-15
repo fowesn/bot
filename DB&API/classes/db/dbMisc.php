@@ -16,33 +16,57 @@ class dbMisc
      * @return integer Глобальный идентификатор пользователя
      * @throws Exception Внутренняя ошибка
      */
-    public static function getGlobalUserId ($user, $service)
+    public static function getGlobalUserId($user, $service)
     {
         $conn = dbConnection::getConnection();
 
         // проверка существования сервиса
-        if (SERVICES[$service] === null)
+        if (in_array($service, array_keys(SERVICES)) === false)
         {
             throw new Exception('Service ' . $service . ' is not supported; Method: ' . __METHOD__ . '; line: ' . __LINE__);
         }
 
-        $query = $conn->prepare('SELECT user_id FROM user WHERE ? = ?');
-        $query->bindParam('1', SERVICES[$service], PDO::PARAM_STR);
-        $query->bindParam('2', $user, PDO::PARAM_INT);
-        $query->execute();
+        $query = $conn->prepare('SELECT user_id FROM user WHERE ' . SERVICES[$service]. ' = ?');
+        $query->execute(array($user));
 
         // Если указанный user_id не существует, то регистрируем пользователя
         // Иначе, возвращаем глобальный user_id
         if (($global_user_id = $query->fetch()['user_id']) === null)
         {
-            $query = 'INSERT INTO user (user_created, preferred_resource_type, ' . SERVICES[$service] . ') VALUES (NOW(), 1, ?)';
+            $query = 'INSERT INTO user (user_created, preferred_resource_type, ' . SERVICES[$service] . ', year_range) 
+                      VALUES (NOW(), 1, ?, (SELECT MAX(problem_year) FROM problem))';
             $query = $conn->prepare($query);
             $query->execute(array($user));
             // получение первичного ключа последней добавленной записи
             $global_user_id = $conn->lastInsertId();
         }
 
+        unset($conn);
+
         return $global_user_id;
     }
+
+
+
+    /**
+     * @param $user_id
+     * @param $year
+     * @return mixed
+     */
+    public static function setYearRange($user_id, $year)
+    {
+        $conn = dbConnection::getConnection();
+
+        $query = $conn->prepare('UPDATE user SET year_range = ? WHERE user_id = ?');
+        $query->execute(array($year, $user_id));
+
+        $query = $conn->prepare('SELECT year_range FROM user 
+                                 WHERE user_id = ?');
+        $query->execute(array($user_id));
+        $answer = $query->fetch()['year_range'];
+
+        unset($conn);
+
+        return $answer;
+    }
 }
-?>
