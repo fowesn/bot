@@ -20,15 +20,15 @@ class message_new
     public static function chooseAnswer($data)
     {
         $user_message = self::parse($data->object->body);
-
-        switch ($user_message[0])
+        $command = array_shift($user_message);
+        switch ($command)
         {
             /////////////////////                      ОСНОВНЫЕ ФУНКЦИИ                    /////////////////////
 
 
             ///////             Помощь                 ///////
             case 'помощь':
-                if(count($user_message) > 1)
+                if(count($user_message) > 0)
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::help()));
                 else {
@@ -44,7 +44,7 @@ class message_new
 
             ///////             Темы                 ///////
             case 'темы':
-                if(count($user_message) > 1)
+                if(count($user_message) > 0)
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::themes()));
                 else
@@ -57,9 +57,9 @@ class message_new
 
             ///////             Задание                 ///////
             case 'задание':
-                if(count($user_message) == 2 && preg_match("/^\d+$/", $user_message[1]))
-                    VKAPI::messageSend(message\Task::getKIMTaskMessage($data->object->user_id, $user_message[1]));
-                else if (count($user_message) == 1)
+                if(count($user_message) == 1 && preg_match("/^\d+$/", $user_message[0]))
+                    VKAPI::messageSend(message\Task::getKIMTaskMessage($data->object->user_id, $user_message[0]));
+                else if (count($user_message) == 0)
                     VKAPI::messageSend(message\Task::getRandomTaskMessage($data->object->user_id));
                 else
                     VKAPI::messageSend(message\Task::getThemeTaskMessage($data->object->user_id, self::setUnderscore($user_message)));
@@ -70,11 +70,11 @@ class message_new
 
             ///////             Разбор                 ///////
             case 'разбор':
-                if(count($user_message) != 2)
+                if(count($user_message) == 1 && preg_match("/^\d+$/", $user_message[0]))
+                    VKAPI::messageSend(message\Answer::getAnalysis($data->object->user_id, $user_message[0]));
+                else
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::anasysis()));
-                else
-					VKAPI::messageSend(message\Answer::getAnalysis($data->object->user_id, $user_message[1]));
                 break;
 
 
@@ -82,7 +82,7 @@ class message_new
 
             ///////             Ресурсы                 ///////
             case 'ресурсы':
-                if(count($user_message) > 1)
+                if(count($user_message) > 0)
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::resources()));
                 else
@@ -95,7 +95,7 @@ class message_new
 
             ///////             Ресурс                 ///////
             case 'ресурс':
-                if(count($user_message) != 2)
+                if(count($user_message) != 1)
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::resource()));
                 else
@@ -107,11 +107,11 @@ class message_new
 
             ///////             Ответ                 ///////
             case 'ответ':
-                if(count($user_message) != 2)
+                if(count($user_message) != 1)
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::answer()));
                 else
-					VKAPI::messageSend(message\Answer::getAnswer($data->object->user_id, $user_message[1]));
+					VKAPI::messageSend(message\Answer::getAnswer($data->object->user_id, $user_message[0]));
                 break;
 
 
@@ -119,7 +119,7 @@ class message_new
 
             ///////             Задания                 ///////
             case 'задания':
-                if(count($user_message) > 1)
+                if(count($user_message) > 0)
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
                         "message" => message\Intelligence::incompleted()));
                 else
@@ -131,8 +131,8 @@ class message_new
 
             ///////             Год                 ///////
             case 'год':
-                if(count($user_message) == 2 && preg_match("/^\d+$/", $user_message[1]))
-                    VKAPI::messageSend(message\OtherRequests::setUserPreferredYear($data->object->user_id, $user_message[1]));
+                if(count($user_message) == 1 && preg_match("/^\d+$/", $user_message[0]))
+                    VKAPI::messageSend(message\OtherRequests::setUserPreferredYear($data->object->user_id, $user_message[0]));
                 else
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
                         "message" => message\Intelligence::year()));
@@ -143,8 +143,8 @@ class message_new
 
             ///////             Условие                 ///////
             case 'условие':
-                if(count($user_message) == 2 && preg_match("/^\d+$/", $user_message[1]))
-                    VKAPI::messageSend(message\Task::getTaskAgain($data->object->user_id, $user_message[1]));
+                if(count($user_message) == 1 && preg_match("/^\d+$/", $user_message[0]))
+                    VKAPI::messageSend(message\Task::getTaskAgain($data->object->user_id, $user_message[0]));
                 else
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
                         "message" => message\Intelligence::repeat()));
@@ -155,10 +155,10 @@ class message_new
 
             ///////             Статистика                 ///////
             case 'статистика':
-                if(count($user_message) == 1)
+                if(count($user_message) == 0)
                     VKAPI::messageSend(message\Statistics::getTasksStatistics($data->object->user_id));
-                else if (count($user_message) == 2 && preg_match("/^\d+$/", $user_message[1]))
-                    VKAPI::messageSend(message\Statistics::getTaskStatistics($data->object->user_id, $user_message[1]));
+                else if (count($user_message) == 1 && preg_match("/^\d+$/", $user_message[0]))
+                    VKAPI::messageSend(message\Statistics::getTaskStatistics($data->object->user_id, $user_message[0]));
                 else
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
                         "message" => message\Intelligence::statistics()));
@@ -170,10 +170,10 @@ class message_new
 
             ///////             Привет & Привет как дела                ///////
             case 'привет':
-                if(count($user_message) == 1)
+                if(count($user_message) == 0)
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
                         "message" => message\Intelligence::hello()));
-                else if (count($user_message) > 2 && $user_message[1] == 'как')
+                else if (count($user_message) > 1 && $user_message[0] == 'как')
                 {
                     $whatsupwords = array("дела", "делишки", "жизнь", "поживаешь");
                     if (in_array($user_message[2], $whatsupwords))
@@ -193,7 +193,7 @@ class message_new
 
             ///////             Как дела                 ///////
             case 'как':
-                if (count($user_message) == 2)
+                if (count($user_message) == 1)
                 {
                     $whatsupwords = array("дела", "делишки", "жизнь", "поживаешь");
                     if (in_array($user_message[1], $whatsupwords))
@@ -213,8 +213,12 @@ class message_new
 
 
             case 'бот':
-                VKAPI::messageSend(array("user_id" => $data->object->user_id,
-                    "message" => message\Intelligence::bot()));
+                if(count($user_message) == 0)
+                    VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                        "message" => message\Intelligence::bot()));
+                else
+                    VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                        "message" => message\OtherRequests::getBasicMessage()));
                 break;
 
 
@@ -274,7 +278,6 @@ class message_new
     }
     private static function setUnderscore($theme)
     {
-        array_shift($theme);
         $theme = implode("_", $theme);
         return $theme;
     }
