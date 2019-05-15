@@ -211,7 +211,7 @@ class message_new
 
 
 
-
+            ///////             Бот                 ///////
             case 'бот':
                 if(count($user_message) == 0)
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
@@ -221,6 +221,14 @@ class message_new
                         "message" => message\OtherRequests::getBasicMessage()));
                 break;
 
+
+
+
+
+            ///////             Спасибо                 ///////
+            case 'спасибо':
+                VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                    "message" => message\Intelligence::thanks()));
 
 
             /////////////////////                      ТЕСТОВЫЕ КОМАНДЫ                    /////////////////////

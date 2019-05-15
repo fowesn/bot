@@ -93,4 +93,9 @@ class Intelligence
         $answers = array("что?", "а?", "чего тебе? напиши \"помощь\"", "где?", "какой?", "это я", "это не я", "бот", "м?", "мяу", "мррр", "А");
         return $answers[rand(0, count($answers) - 1)];
     }
+    public static function thanks()
+    {
+        $answers = array("Не за что","Всегда пожалуйста", "Рад был помочь", ":)");
+        return $answers[rand(0, count($answers) - 1)];
+    }
 }
