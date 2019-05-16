@@ -32,7 +32,7 @@ class message_new
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::help()));
                 else {
-					$message = message\OtherRequests::GetHelpMessage();
+					$message = message\Help::GetHelpMessage();
                     for($i = 0; $i < count($message); $i++)
 						VKAPI::messageSend(array("user_id" => $data->object->user_id,
                                                     "message" => $message[$i]));
@@ -165,6 +165,25 @@ class message_new
                 break;
 
 
+
+
+            /////////////////////                      СПРАВКА                    /////////////////////
+            case 'справка':
+                if(count($user_message) > 0)
+                {
+                    $message = message\Help::parse($user_message[0]);
+                    for ($i = 0; $i < count($message); $i++)
+                        VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                            "message" => $message[$i]));
+                }
+                else
+                {
+                    $message = message\Help::parse($command);
+                    for ($i = 0; $i < count($message); $i++)
+                        VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                            "message" => $message[$i]));
+                }
+                break;
             /////////////////////                      ИНТЕЛЛЕКТ                    /////////////////////
 
 
@@ -201,11 +220,11 @@ class message_new
                             "message" => message\Intelligence::whatsup(False)));
                     else
                         VKAPI::messageSend(array("user_id" => $data->object->user_id,
-                            "message" => message\OtherRequests::getBasicMessage()));
+                            "message" => message\Help::getBasicMessage()));
                 }
                 else
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
-                        "message" => message\OtherRequests::getBasicMessage()));
+                        "message" => message\Help::getBasicMessage()));
                 break;
 
 
@@ -218,7 +237,7 @@ class message_new
                         "message" => message\Intelligence::bot()));
                 else
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
-                        "message" => message\OtherRequests::getBasicMessage()));
+                        "message" => message\Help::getBasicMessage()));
                 break;
 
 
@@ -270,7 +289,7 @@ class message_new
                 }
                 else
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
-						"message" => message\OtherRequests::getBasicMessage()));
+						"message" => message\Help::getBasicMessage()));
                 break;
         }
     }
