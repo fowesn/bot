@@ -261,12 +261,12 @@ class message_new
 
             ///////             [Число]                 ///////
             default:
-                if (preg_match("/^\d+$/", $user_message[0])) {
-                    if (count($user_message) != 2)
+                if (preg_match("/^\d+$/", $command)) {
+                    if (count($user_message) != 1)
 						VKAPI::messageSend(array("user_id" => $data->object->user_id,
 							"message" => message\Intelligence::check()));
                     else
-						VKAPI::messageSend(message\Answer::checkUserAnswer($data->object->user_id, $user_message[0], $user_message[1]));
+						VKAPI::messageSend(message\Answer::checkUserAnswer($data->object->user_id, $command, $user_message[0]));
                 }
                 else
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
