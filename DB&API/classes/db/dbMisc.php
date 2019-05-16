@@ -20,12 +20,6 @@ class dbMisc
     {
         $conn = dbConnection::getConnection();
 
-        // проверка существования сервиса
-        if (in_array($service, array_keys(SERVICES)) === false)
-        {
-            throw new Exception('Service ' . $service . ' is not supported; Method: ' . __METHOD__ . '; line: ' . __LINE__);
-        }
-
         $query = $conn->prepare('SELECT user_id FROM user WHERE ' . SERVICES[$service]. ' = ?');
         $query->execute(array($user));
 
@@ -41,7 +35,7 @@ class dbMisc
             $global_user_id = $conn->lastInsertId();
         }
 
-        unset($conn);
+        $conn = null;
 
         return $global_user_id;
     }
@@ -65,7 +59,7 @@ class dbMisc
         $query->execute(array($user_id));
         $answer = $query->fetch()['year_range'];
 
-        unset($conn);
+        $conn = null;
 
         return $answer;
     }

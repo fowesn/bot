@@ -24,7 +24,7 @@ class dbResource
             $resources[] = $row['resource_type_code'];
         }
 
-        unset($conn);
+        $conn = null;
 
         return $resources;
     }
@@ -51,19 +51,19 @@ class dbResource
         // попытка обратиться к FALSE по ключу вернет null
         if (($resource_type_id = $query->fetch()['resource_type_id']) === null)
         {
-            throw new APIException(-1, RESOURCE_TYPE_NOT_FOUND_MSG, 422);
+            throw new APIException(RESOURCE_TYPE_NOT_FOUND, RESOURCE_TYPE_NOT_FOUND_MSG, 422);
         }
 
         $query = $conn->prepare('UPDATE user SET preferred_resource_type = ? WHERE user_id = ?');
         $query->execute(array($resource_type_id, $user_id));
 
-        $query = $conn->prepare('SELECT user.preferred_resource_type FROM resource_type, user 
+        $query = $conn->prepare('SELECT resource_type.resource_type_code FROM resource_type, user 
                                  WHERE user.preferred_resource_type = resource_type.resource_type_id
                                  AND user.user_id = ?');
-        $query->execute($user_id);
-        $answer = $query->fetch()['preferred_resource_type'];
+        $query->execute(array($user_id));
+        $answer = $query->fetch()['resource_type_code'];
 
-        unset ($conn);
+        $conn = null;
 
         return $answer;
     }
@@ -99,14 +99,15 @@ class dbResource
         }
 
         // получаем ресурсы предпочитаемого типа из указанной коллекции
-        $query = $conn->prepare('SELECT resource.resource_name AS resource_name, resource_type.resource_type_code AS resource_type, resource.resource_content AS resource_content 
+        $query = $conn->prepare('SELECT resource.resource_name AS name, 
+                                        resource_type.resource_type_code AS type, 
+                                        resource.resource_content AS content 
                                 FROM resource
                                 INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
                                 WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
         $query->execute(array($resource_collection_id, $preferred_resource_type));
-        $resources = array();
         while ($row = $query->fetch()) {
-            $resources[] = $row;
+            $resources = $row;
         }
 
         // если массив resources оказался пустой, значит в колллекции не нашлось предпочитаемого типа ресурса
@@ -118,14 +119,16 @@ class dbResource
 
             // для полученных типов ресурсов пытаемся извлечь ресурсы из коллекции
             while ($row = $query->fetch()['resource_type_id']) {
-                $query = $conn->prepare('SELECT resource.resource_name AS resource_name, resource_type.resource_type_code AS resource_type, resource.resource_content AS resource_content 
-                                FROM resource
-                                INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
-                                WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
+                $query = $conn->prepare('SELECT resource.resource_name AS name, 
+                                                resource_type.resource_type_code AS type, 
+                                                resource.resource_content AS content 
+                                         FROM resource
+                                         INNER JOIN resource_type ON (resource_type.resource_type_id = resource.resource_type_id) 
+                                         WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
                 $query->execute(array($resource_collection_id, $row));
 
                 while ($row = $query->fetch()) {
-                    $resources[] = $row;
+                    $resources = $row;
                 }
 
                 // если для указанного типа ресурса нашлись ресурсы, возвращаем их
@@ -135,7 +138,7 @@ class dbResource
             }
         }
 
-        unset ($conn);
+        $conn = null;
 
         return $resources;
     }

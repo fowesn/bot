@@ -18,7 +18,7 @@ $container['logger'] = function ()
 };
 
 // обработчик ошибок и исключений, возникающих НЕ в данном файле, а в модулях работы с БД:
-// исключения предметной области (указанное задание не было выдано, указанный тип ресурса не существует...
+// исключения предметной области (задания кончились, указанный тип ресурса не существует...
 // системные ошибки
 // все исключения, возникающие в модулях работы с БД, отлавливаются здесь
 $container['errorHandler'] = function ($c)
@@ -45,7 +45,7 @@ $container['errorHandler'] = function ($c)
     };
 };
 
-// обработчик ошибок, возникающих при неправильно составленном запросе
+// обработчик ошибок, возникающих в данном файле
 $container['requestErrorHandler'] = function ()
 {
     return function ($response, $message, $httpStatus, $jsonStatus = ERROR)
@@ -110,10 +110,12 @@ $container['phpErrorHandler'] = function ($c)
  */
 $app->post('/assignments', function (Request $request, Response $response)
 {
-    // ВАЛИДАЦИЯ ЗАПРОСА
+    /*
+     * ВАЛИДАЦИЯ ЗАПРОСА
+     */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // тело запроса (все параметры)
     $requestBody = $request->getParsedBody();
@@ -123,35 +125,47 @@ $app->post('/assignments', function (Request $request, Response $response)
     $service = $request->getParam('service', null);
     // необязательный параметр
     $filter = $request->getParam('filter', null);
-    unset ($requestBody['filter']);
+    unset($requestBody['filter']);
 
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset ($requestBody['user']);
+    unset($requestBody['user']);
 
     // валидация параметра service
-    // сервис не поддерживается
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($requestBody['service']);
+    unset($requestBody['service']);
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($requestBody) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
@@ -163,17 +177,22 @@ $app->post('/assignments', function (Request $request, Response $response)
      */
 
     // глобальный id пользователя
-    $guid = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbMisc::getGlobalUserId($user, $service);
 
     // получение еще не выданного задания
-    $problem = dbAssignment::getUnassignedProblem($guid, $filter);
+    $problem_id = dbAssignment::getUnassignedProblem($user_id, $filter);
 
-    //
-    dbAssignment::assignProblem($guid, $problem);
+    // назначение задания пользователю
+    dbAssignment::assignProblem($user_id, $problem_id);
 
+    $data['problem'] = $problem_id + $user_id;
+    $data = array_merge($data, dbProblem::getProblemData($problem_id));
+    $data['resource'] = dbResource::getPreferredResource($user_id, dbProblem::getStatement($problem_id));
 
-
-    return $response->write('boob');
+    return $response->withJson([
+        'status' => SUCCESS,
+        'data' => $data
+    ], 201, JSON_UNESCAPED_UNICODE);
 });
 
 
@@ -188,7 +207,7 @@ $app->get('/assignments', function (Request $request, Response $response)
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // параметры запроса
     $queryParams = $request->getQueryParams();
@@ -196,50 +215,73 @@ $app->get('/assignments', function (Request $request, Response $response)
     // обязательные параметры
     $user = $request->getQueryParam('user', null);
     $service = $request->getQueryParam('service', null);
+    // необязательные параметры
     $problem = $request->getQueryParam('problem', null);
+    $filter = $request->getQueryParam('filter', null);
 
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
-    unset ($queryParams['user']);
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
             400);
     }
+    unset($queryParams['user']);
 
     // валидация параметра problem
-    if ($problem === null)
+    if ($problem !== null)
     {
-        return $errorHandler($response,
-            sprintf(PARAMETER_REQUIRED, 'problem'),
-            400);
-    }
-    unset ($queryParams['problem']);
-    if (!ctype_digit($problem))
-    {
-        return $errorHandler($response,
-            sprintf(WRONG_PARAMETER_TYPE, 'problem', 'non-negative integer'),
-            400);
-    }
+        if (!ctype_digit($problem))
+        {
+            return $requestErrorHandler(
+                $response,
+                sprintf(WRONG_PARAMETER_TYPE, 'problem', 'non-negative integer'),
+                400);
+        }
+        unset($queryParams['problem']);
 
-    // сервис не поддерживается
+        // нельзя указать два необязательных параметра одновременно
+        if ($filter !== null)
+        {
+            return $requestErrorHandler(
+                $response,
+                sprintf(UNKNOWN_PARAMETER, 'filter'),
+                400);
+        }
+    }
+    unset($queryParams['filter']);
+
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($queryParams['service']);
+    unset($queryParams['service']);
 
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($queryParams) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($queryParams))),
             400);
     }
@@ -249,6 +291,58 @@ $app->get('/assignments', function (Request $request, Response $response)
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
+
+    $user_id = dbMisc::getGlobalUserId($user, $service);
+
+    // статистика по заданию
+    if ($problem !== null)
+    {
+        $problem_id = $problem - $user_id;
+
+        if (!dbAssignment::isAssigned($user_id, $problem_id))
+        {
+            return $requestErrorHandler(
+                $response,
+                PROBLEM_NOT_ASSIGNED_MSG,
+                200,
+                PROBLEM_NOT_ASSIGNED);
+        }
+        else
+        {
+            $data = dbAssignment::getAssignmentData(dbAssignment::getAssignmentId($user_id, $problem_id));
+            $data = array_merge($data, dbProblem::getProblemData($problem_id));
+        }
+    }
+    // статистика по фильтру
+    elseif ($filter !== null)
+    {
+        // фильтр нерешенные
+        if ($filter === 'unsolved')
+        {
+            $data = dbAssignment::getUnsolvedAssignments($user_id);
+            foreach ($data as &$problem)
+            {
+                $problem += $user_id;
+            }
+        }
+        else
+        {
+            return $requestErrorHandler(
+                $response,
+                sprintf(UNKNOWN_PARAMETER, 'filter'),
+                422);
+        }
+    }
+    // статистика по всем заданиям
+    else
+    {
+        $data = dbAssignment::getAssignmentsCount($user_id);
+    }
+
+    return $response->withJson([
+        'status' => SUCCESS,
+        'data' => $data
+    ]);
 });
 
 
@@ -263,7 +357,7 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // тело запроса (все параметры)
     $requestBody = $request->getParsedBody();
@@ -272,58 +366,74 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
     $user = $request->getParam('user', null);
     $service = $request->getParam('service', null);
     $problem = $request->getParam('problem', null);
-    $answer = $request->getParam('problem', null);
+    $user_answer = $request->getParam('answer', null);
 
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
-    unset ($requestBody['user']);
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
             400);
     }
+    unset($requestBody['user']);
 
     // валидация параметра problem
     if ($problem === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'problem'),
             400);
     }
-    unset ($requestBody['problem']);
     if (!ctype_digit($problem))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'problem', 'non-negative integer'),
             400);
     }
+    unset($requestBody['problem']);
 
     // валидация параметра answer
-    if ($answer === null)
+    if ($user_answer === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'answer'),
             400);
     }
     unset ($requestBody['answer']);
 
-    // сервис не поддерживается
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($requestBody['service']);
+    unset($requestBody['service']);
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($requestBody) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
@@ -332,6 +442,33 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
      * ОБРАБОТКА ЗАПРОСА
      */
 
+    $user_id = dbMisc::getGlobalUserId($user, $service);
+
+    $problem_id = $problem - $user_id;
+
+    if (!dbAssignment::isAssigned($user_id, $problem_id))
+    {
+        return $requestErrorHandler(
+            $response,
+            PROBLEM_NOT_ASSIGNED_MSG,
+            200,
+            PROBLEM_NOT_ASSIGNED);
+    }
+    else
+    {
+        $isAnswerCorrect = checkShortAnswer::checkAnswer($problem_id, $user_answer);
+        dbAssignment::updateAssignment(
+            dbAssignment::getAssignmentId($user_id, $problem_id),
+            $isAnswerCorrect,
+            $user_answer);
+    }
+
+    return $response->withJson([
+        'status' => SUCCESS,
+        'data' => [
+            'answer_correct' => $isAnswerCorrect
+        ],
+    ], 201);
 });
 
 
@@ -346,51 +483,72 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // параметры запроса
     $queryParams = $request->getQueryParams();
 
     // обязательные параметры
+    $problem = $request->getAttribute('route')->getArgument('problem');
     $user = $request->getQueryParam('user', null);
     $service = $request->getQueryParam('service', null);
-    $problem = $request->getAttribute('problem', null);
 
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
-            400);
-    }
-    unset ($queryParams['user']);
-
-    // валидация атрибута запроса problem
-    if (!ctype_digit($problem))
-    {
-        return $errorHandler($response,
-            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
             400);
     }
     unset($queryParams['user']);
 
-    // валидация сервиса
+    // валидация атрибута запроса problem
+    if ($problem === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'problem'),
+            400);
+    }
+    if (!ctype_digit($problem))
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'problem', 'non-negative integer'),
+            400);
+    }
+    unset($queryParams['problem']);
+
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($queryParams['service']);
+    unset($queryParams['service']);
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($queryParams) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($queryParams))),
             400);
     }
@@ -399,19 +557,36 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbMisc::getGlobalUserId($user, $service);
 
-    $problem = $problem ^ $user;
+    $problem_id = $problem - $user_id;
 
-    if (!dbAssignment::isAssigned($user, $problem))
+//    return $response->withJson([
+//        'problem' => $problem,
+//        'pid' => $problem_id,
+//        'u' => $user,
+//        'uid' => $user_id
+//    ], 200);
+
+    if (!dbAssignment::isAssigned($user_id, $problem_id))
     {
-        throw new APIException(PROBLEM_NOT_ASSIGNED, PROBLEM_NOT_ASSIGNED_MSG, 200);
+        return $requestErrorHandler(
+            $response,
+            PROBLEM_NOT_ASSIGNED_MSG,
+            200,
+            PROBLEM_NOT_ASSIGNED);
     }
     else
     {
-
+        $data = dbProblem::getProblemData($problem_id);
+        $data['problem'] = $problem;
+        $data['resource'] = dbResource::getPreferredResource($user_id, dbProblem::getStatement($problem_id));
     }
 
+    return $response->withJson([
+        'status' => SUCCESS,
+        'data' => $data
+    ], 200);
 });
 
 
@@ -426,51 +601,72 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // параметры запроса
     $queryParams = $request->getQueryParams();
 
     // обязательные параметры
+    $problem = $request->getAttribute('route')->getArgument('problem');
     $user = $request->getQueryParam('user', null);
     $service = $request->getQueryParam('service', null);
-    $problem = $request->getAttribute('problem', null);
 
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset ($queryParams['user']);
+    unset($queryParams['user']);
 
     // валидация атрибута запроса problem
-    if (!ctype_digit($problem))
+    if ($problem === null)
     {
-        return $errorHandler($response,
-            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'problem'),
             400);
     }
-    unset ($queryParams['problem']);
+    if (!ctype_digit($problem))
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'problem', 'non-negative integer'),
+            400);
+    }
+    unset($queryParams['problem']);
 
-    // сервис не поддерживается
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($queryParams['service']);
+    unset($queryParams['service']);
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($queryParams) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($queryParams))),
             400);
     }
@@ -479,6 +675,27 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
      * ОБРАБОТКА ЗАПРОСА
      */
 
+    $user_id = dbMisc::getGlobalUserId($user, $service);
+
+    $problem_id = $problem - $user_id;
+
+    if (!dbAssignment::isAssigned($user_id, $problem_id))
+    {
+        return $requestErrorHandler(
+            $response,
+            PROBLEM_NOT_ASSIGNED_MSG,
+            200,
+            PROBLEM_NOT_ASSIGNED);
+    }
+    else
+    {
+        $data['resource'] = dbResource::getPreferredResource($user_id, dbProblem::getSolution($problem_id));
+    }
+
+    return $response->withJson([
+        'status' => SUCCESS,
+        'data' => $data
+    ], 200);
 });
 
 
@@ -493,51 +710,72 @@ $app->get('/problems/{problem}/answer', function (Request $request, Response $re
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // параметры запроса
     $queryParams = $request->getQueryParams();
 
     // обязательные параметры
+    $problem = $request->getAttribute('route')->getArgument('problem');
     $user = $request->getQueryParam('user', null);
     $service = $request->getQueryParam('service', null);
-    $problem = $request->getAttribute('problem', null);
 
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset ($queryParams['user']);
+    unset($queryParams['user']);
 
     // валидация атрибута запроса problem
-    if (!ctype_digit($problem))
+    if ($problem === null)
     {
-        return $errorHandler($response,
-            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'problem'),
             400);
     }
-    unset ($queryParams['problem']);
+    if (!ctype_digit($problem))
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'problem', 'non-negative integer'),
+            400);
+    }
+    unset($queryParams['problem']);
 
-    // сервис не поддерживается
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($queryParams['service']);
+    unset($queryParams['service']);
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($queryParams) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($queryParams))),
             400);
     }
@@ -546,6 +784,30 @@ $app->get('/problems/{problem}/answer', function (Request $request, Response $re
      * ОБРАБОТКА ЗАПРОСА
      */
 
+    $user_id = dbMisc::getGlobalUserId($user, $service);
+
+    $problem_id = $problem - $user_id;
+
+    if (!dbAssignment::isAssigned($user_id, $problem_id))
+    {
+        return $requestErrorHandler(
+            $response,
+            PROBLEM_NOT_ASSIGNED_MSG,
+            200,
+            PROBLEM_NOT_ASSIGNED);
+    }
+    else
+    {
+        $data['answer'] = dbProblem::getAnswer($problem_id);
+        dbAssignment::updateAssignment(
+            dbAssignment::getAssignmentId($user_id, $problem_id),
+            ANSWER_REQUEST);
+    }
+
+    return $response->withJson([
+        'status' => SUCCESS,
+        'data' => $data
+    ], 200);
 });
 
 
@@ -560,7 +822,7 @@ $app->get('/problems/problem_types', function (Request $request, Response $respo
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // параметры запроса
     $queryParams = $request->getQueryParams();
@@ -568,7 +830,8 @@ $app->get('/problems/problem_types', function (Request $request, Response $respo
     // если тело непустое, то оно содержит неизвестные параметры
     if (count($queryParams) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($queryParams))),
             400);
     }
@@ -578,7 +841,7 @@ $app->get('/problems/problem_types', function (Request $request, Response $respo
      */
 
     $answer = [
-        'status' => 0,
+        'status' => SUCCESS,
         'data' => dbProblem::getProblemTypes()
     ];
 
@@ -597,7 +860,7 @@ $app->get('/resources', function (Request $request, Response $response)
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // параметры запроса
     $queryParams = $request->getQueryParams();
@@ -605,7 +868,8 @@ $app->get('/resources', function (Request $request, Response $response)
     // если тело непустое, то оно содержит неизвестные параметры
     if (count($queryParams) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($queryParams))),
             400);
     }
@@ -615,7 +879,7 @@ $app->get('/resources', function (Request $request, Response $response)
      */
 
     $answer = [
-        'status' => 0,
+        'status' => SUCCESS,
         'data' => dbResource::getResourceTypes()
     ];
 
@@ -634,7 +898,7 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // тело запроса (все параметры)
     $requestBody = $request->getParsedBody();
@@ -647,47 +911,62 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
-            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset ($requestBody['user']);
+    unset($requestBody['user']);
 
 
     // валидация парамтра resource_type
     if ($resource_type === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'resource_type'),
             400);
     }
     if (!ctype_alpha($resource_type))
     {
-        return $errorHandler($response,
-            sprintf(WRONG_PARAMETER_TYPE, 'resource', 'alphabetical characters only string'),
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_PARAMETER_TYPE, 'resource_type', 'alphabetical characters only string'),
             400);
     }
-    unset ($requestBody['resource_type']);
+    unset($requestBody['resource_type']);
 
 
-    // сервис не поддерживается
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($requestBody['service']);
+    unset($requestBody['service']);
 
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($requestBody) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
@@ -697,17 +976,16 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $uid = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbMisc::getGlobalUserId($user, $service);
     return $response->withJson([
-        'status' => 0,
+        'status' => SUCCESS,
         'data' =>
             [
                 'user' => $user,
-                'year' => dbResource::setPreferredResource($)
+                'resource_type' => dbResource::setPreferredResource($user_id, $resource_type)
             ]
     ], 200);
 });
-
 
 
 
@@ -721,7 +999,7 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
      */
 
     // экземпляр обработчика ошибок запроса
-    $errorHandler = $this->get('requestErrorHandler');
+    $requestErrorHandler = $this->get('requestErrorHandler');
 
     // тело запроса (все параметры)
     $requestBody = $request->getParsedBody();
@@ -735,53 +1013,69 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
     // валидация параметра user
     if ($user === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'user'),
             400);
     }
     if (!ctype_digit($user))
     {
-        return $errorHandler($response,
-            sprintf(WRONG_PARAMETER_TYPE, 'user', 'non-negative integer'),
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset ($requestBody['user']);
+    unset($requestBody['user']);
 
 
     // валидация парамтра year
     if ($year === null)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(PARAMETER_REQUIRED, 'year'),
             400);
     }
     if (!ctype_digit($year))
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'year', 'number above ' . MIN_YEAR),
             400);
     }
     if ($year < MIN_YEAR)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(WRONG_PARAMETER_TYPE, 'year', 'number above ' . MIN_YEAR),
             422);
     }
-    unset ($requestBody['year']);
+    unset($requestBody['year']);
 
 
-    // сервис не поддерживается
+    // валидация параметра service
+    if ($service === null)
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(PARAMETER_REQUIRED, 'service'),
+            400);
+    }
     if (in_array($service, array_keys(SERVICES)) === false)
     {
-        return $errorHandler($response, WRONG_SERVICE, 400);
+        return $requestErrorHandler(
+            $response,
+            WRONG_SERVICE,
+            400);
     }
-    unset ($requestBody['service']);
+    unset($requestBody['service']);
 
 
     // если после извлечения всех параметров тело непустое, то оно содержит неизвестные параметры
     if (count($requestBody) > 0)
     {
-        return $errorHandler($response,
+        return $requestErrorHandler(
+            $response,
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
@@ -791,13 +1085,13 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $uid = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbMisc::getGlobalUserId($user, $service);
     return $response->withJson([
-        'status' => 0,
+        'status' => SUCCESS,
         'data' =>
         [
             'user' => $user,
-            'year' => dbMisc::setYearRange($uid, $year)
+            'year' => dbMisc::setYearRange($user_id, $year)
         ]
     ], 200);
 });
