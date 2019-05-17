@@ -30,17 +30,16 @@ $container['errorHandler'] = function ($c)
                 'status' => $exception->jsonStatus,
                 'data' => [
                     'message' => $exception->getMessage()
-                ]), $exception->getCode(), JSON_UNESCAPED_UNICODE);
+                ]), $exception->getCode());
         }
         else
         {
-            // TODO: проверить, что сообщение действительно заносится в лог
             $c->logger->addInfo($exception->getMessage() . ' ' . ' ' . $exception->getFile() . ' ' . $exception->getLine());
             return $response->withJson(array(
                 'status' => ERROR,
                 'data' => [
                     'message' => 'Server error occurred, please try again later!'
-                ]), 500, JSON_UNESCAPED_UNICODE);
+                ]), 500);
         }
     };
 };
@@ -54,7 +53,7 @@ $container['requestErrorHandler'] = function ()
             'status' => $jsonStatus,
             'data' => [
                 'message' => $message
-            ]), $httpStatus, JSON_UNESCAPED_UNICODE);
+            ]), $httpStatus);
     };
 };
 
@@ -69,7 +68,7 @@ $container['notFoundHandler'] = function ()
             'status' => ERROR,
             'data' => [
                 'message' => 'URI not found!'
-            ]), 404, JSON_UNESCAPED_UNICODE);
+            ]), 404);
     };
 };
 
@@ -84,7 +83,7 @@ $container['notAllowedHandler'] = function ()
                 'status' => ERROR,
                 'data' =>[
                     'message'=> 'Method must be one of: ' . implode(', ', $methods) . '!',
-                ]), 405, JSON_UNESCAPED_UNICODE);
+                ]), 405);
     };
 };
 
@@ -99,7 +98,7 @@ $container['phpErrorHandler'] = function ($c)
             'status' => ERROR,
             'data' => [
                 'message' => 'Server error occurred, please try again later!'
-            ]), 500, JSON_UNESCAPED_UNICODE);
+            ]), 500);
     };
 };
 
@@ -156,7 +155,7 @@ $app->post('/assignments', function (Request $request, Response $response)
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($requestBody['service']);
@@ -177,7 +176,7 @@ $app->post('/assignments', function (Request $request, Response $response)
      */
 
     // глобальный id пользователя
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
 
     // получение еще не выданного задания
     $problem_id = dbAssignment::getUnassignedProblem($user_id, $filter);
@@ -192,7 +191,7 @@ $app->post('/assignments', function (Request $request, Response $response)
     return $response->withJson([
         'status' => SUCCESS,
         'data' => $data
-    ], 201, JSON_UNESCAPED_UNICODE);
+    ], 201);
 });
 
 
@@ -271,7 +270,7 @@ $app->get('/assignments', function (Request $request, Response $response)
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($queryParams['service']);
@@ -292,7 +291,7 @@ $app->get('/assignments', function (Request $request, Response $response)
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
 
     // статистика по заданию
     if ($problem !== null)
@@ -316,21 +315,19 @@ $app->get('/assignments', function (Request $request, Response $response)
     // статистика по фильтру
     elseif ($filter !== null)
     {
-        // фильтр нерешенные
-        if ($filter === 'unsolved')
+        switch ($filter)
         {
-            $data = dbAssignment::getUnsolvedAssignments($user_id);
-            foreach ($data as &$problem)
-            {
-                $problem += $user_id;
-            }
-        }
-        else
-        {
-            return $requestErrorHandler(
-                $response,
-                sprintf(UNKNOWN_PARAMETER, 'filter'),
-                422);
+            case "unsolved":
+                $data = dbAssignment::getUnsolvedAssignments($user_id);
+                foreach ($data as &$problem) {
+                    $problem += $user_id;
+                }
+                break;
+            default:
+                return $requestErrorHandler(
+                    $response,
+                    sprintf(WRONG_ENUM_PARAMETER, 'filter', implode(', ', ASSIGNMENT_FILTERS)),
+                    422);
         }
     }
     // статистика по всем заданиям
@@ -424,7 +421,7 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($requestBody['service']);
@@ -442,7 +439,7 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
 
     $problem_id = $problem - $user_id;
 
@@ -539,7 +536,7 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($queryParams['service']);
@@ -557,7 +554,7 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
 
     $problem_id = $problem - $user_id;
 
@@ -657,7 +654,7 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($queryParams['service']);
@@ -675,7 +672,7 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
 
     $problem_id = $problem - $user_id;
 
@@ -766,7 +763,7 @@ $app->get('/problems/{problem}/answer', function (Request $request, Response $re
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($queryParams['service']);
@@ -784,7 +781,7 @@ $app->get('/problems/{problem}/answer', function (Request $request, Response $re
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
 
     $problem_id = $problem - $user_id;
 
@@ -956,7 +953,7 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($requestBody['service']);
@@ -976,7 +973,7 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
     return $response->withJson([
         'status' => SUCCESS,
         'data' =>
@@ -1065,7 +1062,7 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
     {
         return $requestErrorHandler(
             $response,
-            WRONG_SERVICE,
+            sprintf(WRONG_ENUM_PARAMETER, 'service', implode(', ', array_keys(SERVICES))),
             400);
     }
     unset($requestBody['service']);
@@ -1085,13 +1082,13 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $user_id = dbMisc::getGlobalUserId($user, $service);
+    $user_id = dbUser::getGlobalUserId($user, $service);
     return $response->withJson([
         'status' => SUCCESS,
         'data' =>
         [
             'user' => $user,
-            'year' => dbMisc::setYearRange($user_id, $year)
+            'year' => dbUser::setYearRange($user_id, $year)
         ]
     ], 200);
 });
