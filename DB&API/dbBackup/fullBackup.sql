@@ -1,13 +1,13 @@
--- MySQL dump 10.16  Distrib 10.2.15-MariaDB, for Linux (x86_64)
+-- MySQL dump 10.17  Distrib 10.3.12-MariaDB, for Win64 (AMD64)
 --
 -- Host: localhost    Database: nestulov
 -- ------------------------------------------------------
--- Server version	10.2.15-MariaDB-log
+-- Server version	10.3.12-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `answer`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `answer` (
-  `solution_id` int(11) NOT NULL AUTO_INCREMENT,
+  `answer_id` int(11) NOT NULL AUTO_INCREMENT,
   `assignment_id` int(11) NOT NULL,
-  `solution_answer` varchar(255) DEFAULT NULL,
-  `solution_provided` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`solution_id`),
+  `answer` varchar(255) DEFAULT NULL,
+  `answer_provided` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`answer_id`),
   KEY `fk_solution_assignment1_idx` (`assignment_id`),
   CONSTRAINT `fk_solution_assignment1` FOREIGN KEY (`assignment_id`) REFERENCES `assignment` (`assignment_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,7 +39,7 @@ CREATE TABLE `answer` (
 
 LOCK TABLES `answer` WRITE;
 /*!40000 ALTER TABLE `answer` DISABLE KEYS */;
-INSERT INTO `answer` VALUES (1,1,'22162','2018-08-26 21:59:05'),(2,1,'улалдпьклуь','2018-08-26 21:59:31');
+INSERT INTO `answer` VALUES (4,56,'20','2019-05-16 16:33:06'),(5,56,'21','2019-05-16 16:33:46'),(6,57,'19','2019-05-16 16:36:39'),(7,57,'19','2019-05-16 16:36:49');
 /*!40000 ALTER TABLE `answer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -56,13 +56,14 @@ CREATE TABLE `assignment` (
   `user_id` int(11) NOT NULL,
   `assignment_last_answer` varchar(255) DEFAULT NULL,
   `assigned` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `correct_answer_provided` tinyint(1) NOT NULL,
+  `correct_answer_provided` tinyint(1) NOT NULL DEFAULT 0,
+  `correct_answer_requested` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`assignment_id`),
   KEY `fk_assignment_problem1_idx` (`problem_id`),
   KEY `fk_assignment_user1_idx` (`user_id`),
   CONSTRAINT `fk_assignment_problem1` FOREIGN KEY (`problem_id`) REFERENCES `problem` (`problem_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_assignment_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,7 +72,7 @@ CREATE TABLE `assignment` (
 
 LOCK TABLES `assignment` WRITE;
 /*!40000 ALTER TABLE `assignment` DISABLE KEYS */;
-INSERT INTO `assignment` VALUES (1,1,38,'улалдпьклуь','2018-08-26 21:59:31',1),(2,2,38,NULL,'2018-12-12 16:44:46',0),(3,10,38,NULL,'2018-12-12 16:45:04',0);
+INSERT INTO `assignment` VALUES (56,12,48,'19','2019-05-16 17:47:42',1,0),(57,11,48,'19','2019-05-16 17:47:44',0,0);
 /*!40000 ALTER TABLE `assignment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -134,30 +135,32 @@ INSERT INTO `exam_item` VALUES (1,1,1,1),(2,2,1,1),(3,3,1,1),(4,4,1,1),(5,5,1,1)
 UNLOCK TABLES;
 
 --
--- Table structure for table `image`
+-- Table structure for table `input`
 --
 
-DROP TABLE IF EXISTS `image`;
+DROP TABLE IF EXISTS `input`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `image` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `caption` varchar(255) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8;
+CREATE TABLE `input` (
+  `input_id` int(11) NOT NULL AUTO_INCREMENT,
+  `variant_id` int(11) NOT NULL,
+  `input` varchar(255) NOT NULL,
+  `answer` varchar(255) NOT NULL,
+  `used` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`input_id`),
+  KEY `fk_input_variant` (`variant_id`),
+  KEY `input_idx` (`input_id`),
+  CONSTRAINT `fk_input_variant` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `image`
+-- Dumping data for table `input`
 --
 
-LOCK TABLES `image` WRITE;
-/*!40000 ALTER TABLE `image` DISABLE KEYS */;
-INSERT INTO `image` VALUES (3,'название','подпись',0),(12,'123123','123123',0),(21,'hello.jpg5af0b42dec0bd1.52854959.jpg','da_best',1),(24,'drawing.png5af135ada35953.33662123.png','123',1),(25,'drawing.png5af135b989ceb3.97573224.png','34753',1),(26,'drawing.png5af1396721e8f0.72400489.png','32453',3),(27,'drawing.png5af141289d50c9.02931419.png','cap',6),(29,'123','123',6),(31,'drawing.png','123',7),(32,'drawing.png','123',7),(34,'drawing.png','sad1',7),(35,'drawing.png','sad1',7),(36,'drawing.png','123',8),(37,'drawing.png','123',8),(38,'drawing.png','123sa',9),(39,'drawing.png','sd1',9),(40,'drawing.png','asd123',9);
-/*!40000 ALTER TABLE `image` ENABLE KEYS */;
+LOCK TABLES `input` WRITE;
+/*!40000 ALTER TABLE `input` DISABLE KEYS */;
+/*!40000 ALTER TABLE `input` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -176,6 +179,7 @@ CREATE TABLE `problem` (
   `problem_modified` timestamp NULL DEFAULT NULL,
   `problem_type_id` int(11) NOT NULL,
   `exam_item_id` int(11) NOT NULL,
+  `problem_year` year(4) NOT NULL,
   PRIMARY KEY (`problem_id`),
   KEY `fk_problem_type_idx` (`problem_type_id`),
   KEY `fk_problem_statement_idx` (`problem_statement`),
@@ -194,7 +198,7 @@ CREATE TABLE `problem` (
 
 LOCK TABLES `problem` WRITE;
 /*!40000 ALTER TABLE `problem` DISABLE KEYS */;
-INSERT INTO `problem` VALUES (1,2,'22162',6,'2018-05-09 20:05:40','2018-05-09 20:05:40',4,5),(2,3,'12211',7,'2018-05-09 20:05:40','2018-05-09 20:05:40',2,14),(3,4,'4',8,'2018-05-09 20:05:40','2018-05-09 20:05:40',3,9),(4,5,'324',9,'2018-05-15 12:56:17','2018-05-15 12:56:17',1,10),(10,10,'4',11,'2018-05-16 16:58:57','2018-05-16 16:58:57',5,2),(11,12,'3',13,'2018-05-16 16:59:41','2018-05-16 16:59:41',4,1),(12,14,'19',15,'2018-05-16 17:00:08','2018-05-16 17:00:08',6,8);
+INSERT INTO `problem` VALUES (1,2,'22162',6,'2018-05-09 20:05:40','2018-05-09 20:05:40',4,5,2019),(2,3,'12211',7,'2018-05-09 20:05:40','2018-05-09 20:05:40',2,14,2018),(3,4,'4',8,'2018-05-09 20:05:40','2018-05-09 20:05:40',3,9,2016),(4,5,'324',9,'2018-05-15 12:56:17','2018-05-15 12:56:17',1,10,2019),(10,10,'4',11,'2018-05-16 16:58:57','2018-05-16 16:58:57',5,2,2015),(11,12,'3',13,'2018-05-16 16:59:41','2018-05-16 16:59:41',4,1,2018),(12,14,'19',15,'2018-05-16 17:00:08','2018-05-16 17:00:08',6,8,2017);
 /*!40000 ALTER TABLE `problem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -212,7 +216,7 @@ CREATE TABLE `problem_type` (
   PRIMARY KEY (`problem_type_id`),
   KEY `fk_problem_type_desc_idx` (`problem_type_desc_id`),
   CONSTRAINT `fk_problem_type_desc` FOREIGN KEY (`problem_type_desc_id`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -300,8 +304,37 @@ CREATE TABLE `resource_type` (
 
 LOCK TABLES `resource_type` WRITE;
 /*!40000 ALTER TABLE `resource_type` DISABLE KEYS */;
-INSERT INTO `resource_type` VALUES (1,'Текст, содержащий необходимую информацию','текст'),(2,'Ссылка на pdf-файл, содержащий необходимую информацию','pdf-файл'),(3,'Ссылка на изображение, содержащее необходимую информацию','изображение'),(4,'Ссылка на страницу в сети Интернет, содержащую необходимую информацию','ссылка');
+INSERT INTO `resource_type` VALUES (1,'Текст, содержащий необходимую информацию','текст'),(2,'Ссылка на pdf-файл, содержащий необходимую информацию','pdf'),(3,'Ссылка на изображение, содержащее необходимую информацию','изображение'),(4,'Ссылка на страницу в сети Интернет, содержащую необходимую информацию','ссылка');
 /*!40000 ALTER TABLE `resource_type` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `task`
+--
+
+DROP TABLE IF EXISTS `task`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `task` (
+  `task_id` int(11) NOT NULL AUTO_INCREMENT,
+  `problem_type_id` int(11) NOT NULL,
+  `exam_item_id` int(11) NOT NULL,
+  PRIMARY KEY (`task_id`),
+  KEY `fk_task_problem_type` (`problem_type_id`),
+  KEY `fk_task_exam_item` (`exam_item_id`),
+  KEY `task_idx` (`task_id`),
+  CONSTRAINT `fk_task_exam_item` FOREIGN KEY (`exam_item_id`) REFERENCES `exam_item` (`exam_item_id`),
+  CONSTRAINT `fk_task_problem_type` FOREIGN KEY (`problem_type_id`) REFERENCES `problem_type` (`problem_type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `task`
+--
+
+LOCK TABLES `task` WRITE;
+/*!40000 ALTER TABLE `task` DISABLE KEYS */;
+/*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -316,10 +349,11 @@ CREATE TABLE `user` (
   `user_created` timestamp NULL DEFAULT NULL,
   `preferred_resource_type` int(11) NOT NULL,
   `user_vk_id` int(11) NOT NULL,
+  `year_range` year(4) NOT NULL,
   PRIMARY KEY (`user_id`),
   KEY `fk_preferred_resource_type_idx` (`preferred_resource_type`),
   CONSTRAINT `fk_preferred_resource_type` FOREIGN KEY (`preferred_resource_type`) REFERENCES `resource_type` (`resource_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -328,8 +362,37 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (5,'2018-05-10 08:40:47',4,19357976),(32,'2018-05-15 22:50:13',3,66270811),(37,'2018-05-23 18:30:20',4,85808949),(38,'2018-05-24 15:16:04',3,43820622);
+INSERT INTO `user` VALUES (48,'2019-05-15 14:55:53',2,1,2017),(51,'2019-05-15 16:05:04',4,2,2019);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `variant`
+--
+
+DROP TABLE IF EXISTS `variant`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `variant` (
+  `variant_id` int(11) NOT NULL AUTO_INCREMENT,
+  `task_id` int(11) NOT NULL,
+  `template` text NOT NULL,
+  `task_year` year(4) NOT NULL,
+  `solution` text NOT NULL,
+  PRIMARY KEY (`variant_id`),
+  KEY `fk_variant_task` (`task_id`),
+  KEY `variant__idx` (`variant_id`),
+  CONSTRAINT `fk_variant_task` FOREIGN KEY (`task_id`) REFERENCES `task` (`task_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `variant`
+--
+
+LOCK TABLES `variant` WRITE;
+/*!40000 ALTER TABLE `variant` DISABLE KEYS */;
+/*!40000 ALTER TABLE `variant` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -341,4 +404,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-10 12:46:27
+-- Dump completed on 2019-05-17 16:15:36
