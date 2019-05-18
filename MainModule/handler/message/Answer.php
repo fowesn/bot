@@ -14,14 +14,14 @@ class Answer
 
     /**
      * @param $userID
-     * @param $taskId
+     * @param $taskID
      * @return array
      * @throws \Exception
      */
-	public static function getAnswer($userID, $taskId) {
+	public static function getAnswer($userID, $taskID) {
 	    if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-		$task = (int)$userID ^ (int)$taskId;
+		$task = (int)$userID ^ (int)$taskID;
 		$params = array("problem_id" => $task, "user_id" => $userID, "service" => "vk");
 		$request_params = http_build_query($params);
 
