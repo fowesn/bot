@@ -107,7 +107,7 @@ class dbResource
                                 WHERE resource.resource_collection_id = ? AND resource.resource_type_id = ?');
         $query->execute(array($resource_collection_id, $preferred_resource_type));
         while ($row = $query->fetch()) {
-            $resources = $row;
+            $resources[] = $row;
         }
 
         // если массив resources оказался пустой, значит в колллекции не нашлось предпочитаемого типа ресурса
@@ -128,7 +128,7 @@ class dbResource
                 $query->execute(array($resource_collection_id, $row));
 
                 while ($row = $query->fetch()) {
-                    $resources = $row;
+                    $resources[] = $row;
                 }
 
                 // если для указанного типа ресурса нашлись ресурсы, возвращаем их
