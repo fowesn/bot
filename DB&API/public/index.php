@@ -186,7 +186,7 @@ $app->post('/assignments', function (Request $request, Response $response)
 
     $data['problem'] = $problem_id + $user_id;
     $data = array_merge($data, dbProblem::getProblemData($problem_id));
-    $data['resource'] = dbResource::getPreferredResource($user_id, dbProblem::getStatement($problem_id));
+    $data['resources'] = dbResource::getPreferredResource($user_id, dbProblem::getStatement($problem_id));
 
     return $response->withJson([
         'status' => SUCCESS,
@@ -339,7 +339,7 @@ $app->get('/assignments', function (Request $request, Response $response)
     return $response->withJson([
         'status' => SUCCESS,
         'data' => $data
-    ]);
+    ], 200);
 });
 
 
@@ -558,13 +558,6 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
 
     $problem_id = $problem - $user_id;
 
-//    return $response->withJson([
-//        'problem' => $problem,
-//        'pid' => $problem_id,
-//        'u' => $user,
-//        'uid' => $user_id
-//    ], 200);
-
     if (!dbAssignment::isAssigned($user_id, $problem_id))
     {
         return $requestErrorHandler(
@@ -577,7 +570,7 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
     {
         $data = dbProblem::getProblemData($problem_id);
         $data['problem'] = $problem;
-        $data['resource'] = dbResource::getPreferredResource($user_id, dbProblem::getStatement($problem_id));
+        $data['resources'] = dbResource::getPreferredResource($user_id, dbProblem::getStatement($problem_id));
     }
 
     return $response->withJson([
@@ -686,7 +679,7 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
     }
     else
     {
-        $data['resource'] = dbResource::getPreferredResource($user_id, dbProblem::getSolution($problem_id));
+        $data['resources'] = dbResource::getPreferredResource($user_id, dbProblem::getSolution($problem_id));
     }
 
     return $response->withJson([
@@ -833,6 +826,8 @@ $app->get('/problems/problem_types', function (Request $request, Response $respo
             400);
     }
 
+
+
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -871,16 +866,16 @@ $app->get('/resources', function (Request $request, Response $response)
             400);
     }
 
+
+
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
 
-    $answer = [
+    return $response->withJson([
         'status' => SUCCESS,
         'data' => dbResource::getResourceTypes()
-    ];
-
-    return $response->withJson($answer, 200);
+    ], 200);
 });
 
 
@@ -931,7 +926,7 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
             sprintf(PARAMETER_REQUIRED, 'resource_type'),
             400);
     }
-    if (!ctype_alpha($resource_type))
+    if (!preg_match('/^[а-яёa-z]+$/msiu', $resource_type))
     {
         return $requestErrorHandler(
             $response,
@@ -967,6 +962,7 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
+
 
 
     /*
@@ -1005,7 +1001,6 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
     $user = $request->getAttribute('route')->getArgument('user');
     $service = $request->getParam('service', null);
     $year = $request->getParam('year', null);
-
 
     // валидация параметра user
     if ($user === null)
@@ -1076,6 +1071,7 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
+
 
 
     /*

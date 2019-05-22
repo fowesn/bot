@@ -235,7 +235,7 @@ class dbAssignment
         /*
          * случайное задание по теме
          */
-        elseif (is_string($filter)) {
+        else {
             // проверка существования темы
             $query = $conn->prepare('SELECT problem_type_id FROM problem_type WHERE problem_type_code  = ?');
             $query->execute(array($filter));
