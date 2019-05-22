@@ -1,13 +1,13 @@
--- MySQL dump 10.17  Distrib 10.3.12-MariaDB, for Win64 (AMD64)
+-- MySQL dump 10.16  Distrib 10.2.22-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: nestulov
 -- ------------------------------------------------------
--- Server version	10.3.12-MariaDB
+-- Server version	10.2.22-MariaDB-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -39,7 +39,6 @@ CREATE TABLE `answer` (
 
 LOCK TABLES `answer` WRITE;
 /*!40000 ALTER TABLE `answer` DISABLE KEYS */;
-INSERT INTO `answer` VALUES (4,56,'20','2019-05-16 16:33:06'),(5,56,'21','2019-05-16 16:33:46'),(6,57,'19','2019-05-16 16:36:39'),(7,57,'19','2019-05-16 16:36:49');
 /*!40000 ALTER TABLE `answer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -72,7 +71,6 @@ CREATE TABLE `assignment` (
 
 LOCK TABLES `assignment` WRITE;
 /*!40000 ALTER TABLE `assignment` DISABLE KEYS */;
-INSERT INTO `assignment` VALUES (56,12,48,'19','2019-05-16 17:47:42',1,0),(57,11,48,'19','2019-05-16 17:47:44',0,0);
 /*!40000 ALTER TABLE `assignment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -151,7 +149,7 @@ CREATE TABLE `input` (
   KEY `fk_input_variant` (`variant_id`),
   KEY `input_idx` (`input_id`),
   CONSTRAINT `fk_input_variant` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -160,6 +158,7 @@ CREATE TABLE `input` (
 
 LOCK TABLES `input` WRITE;
 /*!40000 ALTER TABLE `input` DISABLE KEYS */;
+INSERT INTO `input` VALUES (1,1,'О,В,Д,П,А 0,1,2,3,4 ВОДОПАД шестнадцатеричным','22162',0),(2,1,'Д,Х,Р,О 0,1,2,3,4 ХОРОВОД восьмеричным','36714',0),(3,1,'О,К,Г,Д,Р 0,1,2,3,4 ГОРОДОК восьмеричным','42061',0),(4,1,'Х,Е,Л,О,Д 0,1,2,3,4 ЛЕДОХОД шестнадцатеричным','999C',0),(5,1,'И,Д,Т,О,Х 0,1,2,3,4 ТИХОХОД шестнадцатеричным','89CD',0),(6,2,'А,Б,В,Г А-10,Б-11,В-110,Г-0 ВБГАГВ шестнадцатеричный','5B1A',0),(7,2,'А,Б,В,Г А-10,Б-11,В-110,Г-0 ВАГБААГВ шестнадцатеричный','D3A6',0),(8,2,'А,Б,В,Г А-0,Б-11,В-100,Г-011 ГБАВАВГ восьмеричный','151646',0),(9,2,'А,Б,В,Г А-00,Б-10,В-010,Г-101 БАБВГВ шестнадцатеричный','44AA',0),(10,3,'10101010_2-252_8+7_{16}','7',0),(11,3,'10101010_2-250_8+7_{16}','9',0),(12,3,'10101011_2-250_8+7_{16}','8',0),(13,3,'10101110_2-256_8+A_{16}','10',0),(14,3,'B9_{16}-271_8','0',0),(15,3,'253_8-AB_{16}','0',0);
 /*!40000 ALTER TABLE `input` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -189,7 +188,7 @@ CREATE TABLE `problem` (
   CONSTRAINT `fk_problem_type` FOREIGN KEY (`problem_type_id`) REFERENCES `problem_type` (`problem_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_solution` FOREIGN KEY (`problem_solution`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_statement` FOREIGN KEY (`problem_statement`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -198,7 +197,6 @@ CREATE TABLE `problem` (
 
 LOCK TABLES `problem` WRITE;
 /*!40000 ALTER TABLE `problem` DISABLE KEYS */;
-INSERT INTO `problem` VALUES (1,2,'22162',6,'2018-05-09 20:05:40','2018-05-09 20:05:40',4,5,2019),(2,3,'12211',7,'2018-05-09 20:05:40','2018-05-09 20:05:40',2,14,2018),(3,4,'4',8,'2018-05-09 20:05:40','2018-05-09 20:05:40',3,9,2016),(4,5,'324',9,'2018-05-15 12:56:17','2018-05-15 12:56:17',1,10,2019),(10,10,'4',11,'2018-05-16 16:58:57','2018-05-16 16:58:57',5,2,2015),(11,12,'3',13,'2018-05-16 16:59:41','2018-05-16 16:59:41',4,1,2018),(12,14,'19',15,'2018-05-16 17:00:08','2018-05-16 17:00:08',6,8,2017);
 /*!40000 ALTER TABLE `problem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -225,7 +223,7 @@ CREATE TABLE `problem_type` (
 
 LOCK TABLES `problem_type` WRITE;
 /*!40000 ALTER TABLE `problem_type` DISABLE KEYS */;
-INSERT INTO `problem_type` VALUES (1,1,'кодирование_информации'),(2,1,'робот'),(3,1,'передача_информации'),(4,1,'системы_счисления'),(5,1,'поиск_маршрута_по_расписанию'),(6,1,'арифметическая_прогрессия');
+INSERT INTO `problem_type` VALUES (1,1,'кодирование_информации'),(2,1,'робот'),(3,1,'передача_информации'),(4,1,'системы_счисления'),(5,1,'поиск_маршрута_по_расписанию');
 /*!40000 ALTER TABLE `problem_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -247,7 +245,7 @@ CREATE TABLE `resource` (
   KEY `fk_resource_type_idx` (`resource_type_id`),
   CONSTRAINT `fk_resource_collection` FOREIGN KEY (`resource_collection_id`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resource_type` FOREIGN KEY (`resource_type_id`) REFERENCES `resource_type` (`resource_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -256,7 +254,6 @@ CREATE TABLE `resource` (
 
 LOCK TABLES `resource` WRITE;
 /*!40000 ALTER TABLE `resource` DISABLE KEYS */;
-INSERT INTO `resource` VALUES (1,2,'text1','Для кодирования букв О, В, Д, П, А решили использовать двоичное представление чисел 0, 1, 2, 3 и 4 соответственно (с сохранением одного незначащего нуля в случае одноразрядного представления). Закодируйте последовательность букв ВОДОПАД таким способом и результат запишите восьмеричным кодом.',1),(2,3,'text1','У исполнителя ДваПять две команды, которым присвоены номера:\n\n1.      отними 2\n2.      раздели на 5\n\nВыполняя первую из них, ДваПять отнимает от числа на экране 2, а выполняя вторую, делит это число на 5 (если деление нацело невозможно, ДваПять отключается)\nЗапишите порядок команд в программе, которая содержит не более 5 команд и переводит число 152 в число 2.\nВ ответе указывайте лишь номера команд, пробелы между цифрами не ставьте. Так, для программы\n\nраздели на 5\nотними 2\nотними 2\n\nнужно написать 211. Эта программа преобразует, например, число 55 в число 7.',1),(3,4,'text1','Производится четырёхканальная (квадро) звукозапись с частотой дискретизации 16 кГц и 32-битныных не производится. Размер полученного файла  60 Мбайт. Какая из приведённых ниже величин наиболее близка ко времени, в течение которого проводилась запись?\n\n1) 1 мин.\n2) 2 мин.\n3) 3 мин.\n4) 4 мин.',1),(4,5,'text1','Алексей составляет таблицу кодовых слов для передачи сообщений, каждому сообщению соответствует своё кодовое слово. В качестве кодовых слов Алексей использует 5-буквенные слова, в которых есть только буквы A, B, C, X, причём буква X может появиться на первом месте или не появиться вовсе. Сколько различных кодовых слов может использовать Алексей?',1),(5,6,'text1','1) Представь числа в условии в двоичном коде.\n2) Закодируй с их помощью слово водопад.\n3) Полученное двоичное число разбей на тройки справа налево и переведи в восьмеричную систему.',1),(6,7,'text1','Дели число на 5 всегда, когда это возможно (то есть когда число кратно 5), в оставшихся случаях отнимай 2.',1),(7,8,'text1','1) Частота дискретизации 16 кГц означает, что за секунду сигнал запоминается 16000 раз.\n2) Объем памяти возрастает прямо пропорционально числу каналов.\n3) Разрешение и размер файла нужно привести к одной единице измерения (например, битам), а время перевести в секунды.',1),(8,9,'text1','Посчитай, сколько букв может находиться на каждой позиции и перемножь.',1),(17,2,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/1Pimg.png',3),(18,3,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/2Pimg.png',3),(19,4,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/3Pimg.png',3),(20,5,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/4Pimg.png',3),(21,2,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/1Ppdf.pdf',2),(22,3,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/2Ppdf.pdf',2),(23,4,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/3Ppdf.pdf',2),(24,5,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/4Ppdf.pdf',2),(25,6,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/1Spdf.pdf',2),(26,7,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/2Spdf.pdf',2),(27,8,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/3Spdf.pdf',2),(28,9,'Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/4Spdf.pdf',2),(29,6,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/1Simg.png',3),(30,7,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/2Simg.png',3),(31,8,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/3Simg.png',3),(32,9,'Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/4Simg.png',3),(33,2,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/1Pimg.png',4),(34,3,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/2Pimg.png',4),(35,4,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/3Pimg.png',4),(36,5,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/4Pimg.png',4),(37,6,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/1Simg.png',4),(38,7,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/2Simg.png',4),(39,8,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/3Pimg.png',4),(40,9,'Plink','http://kappa.cs.petrsu.ru/~nestulov/API/files/4Pimg.png',4),(42,10,'text+image5','Транспортная фирма осуществляет грузоперевозки разными видами транспорта между четырьмя городами: ЧЕРЕПОВЕЦ, МОСКВА, КУРСК, ПЕРМЬ. Стоимость доставки грузов и время в пути указаны в таблице ниже.\nОпределите маршрут наиболее дешевого варианта доставки груза из ЧЕРЕПОВЦА в ПЕРМЬ. Если таких маршрутов несколько, в ответе укажите наиболее выгодный по времени вариант.\n1) ЧЕРЕПОВЕЦ  ПЕРМЬ \n2) ЧЕРЕПОВЕЦ  КУРСК  ПЕРМЬ \n3) ЧЕРЕПОВЕЦ  МОСКВА  ПЕРМЬ \n4) ЧЕРЕПОВЕЦ  МОСКВА  КУРСК  ПЕРМЬ',1),(43,10,'text+image5','http://kappa.cs.petrsu.ru/~nestulov/API/files/5PimgP.jpg',1),(44,10,'5Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/5Pimg.png',3),(45,10,'5pdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/5Ppdf.pdf',2),(46,11,'text5','1. ЧЕРЕПОВЕЦ  ПЕРМЬ: стоимость 140, время 80\n\n2. ЧЕРЕПОВЕЦ  КУРСК  ПЕРМЬ: стоимость 100 + 60 = 160, время 80 + 40 = 120\n\n3. ЧЕРЕПОВЕЦ  МОСКВА  ПЕРМЬ: стоимость 50 + 100 = 150, время 15 + 70 =85\n\n4. ЧЕРЕПОВЕЦ  МОСКВА  КУРСК  ПЕРМЬ: стоимость 50 + 30 + 60 = 140, время 15 + 10 + 40 = 65\n\nВарианты 1 и 4 имеют одинаково минимальную стоимость 140 (140 < 150 < 160), но вариант 4 более выгоден по времени 65 < 80.',1),(47,11,'5Simg','http://kappa.cs.petrsu.ru/~nestulov/API/files/5Simg.png',3),(48,11,'5Spdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/5Spdf.pdf',2),(49,12,'6Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/6Pimg.png',3),(50,12,'6Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/6Ppdf.pdf',2),(51,13,'6Simg','http://kappa.cs.petrsu.ru/~nestulov/API/files/6Simg.png',3),(52,13,'6Spdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/6Spdf.pdf',2),(53,14,'7Pimg','http://kappa.cs.petrsu.ru/~nestulov/API/files/7Pimg.png',3),(54,14,'7Ppdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/7Ppdf.pdf',2),(55,15,'7Simg','http://kappa.cs.petrsu.ru/~nestulov/API/files/7Simg.png',3),(56,15,'7Spdf','http://kappa.cs.petrsu.ru/~nestulov/API/files/7spdf.pdf',2),(57,14,'7Ptext+image','Определите, что будет напечатано в результате работы следующего фрагмента программы:',1),(58,14,'7Ptext+image','http://kappa.cs.petrsu.ru/~nestulov/API/files/7PimgP.png',1);
 /*!40000 ALTER TABLE `resource` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -270,7 +267,7 @@ DROP TABLE IF EXISTS `resource_collection`;
 CREATE TABLE `resource_collection` (
   `resource_collection_id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`resource_collection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -279,7 +276,7 @@ CREATE TABLE `resource_collection` (
 
 LOCK TABLES `resource_collection` WRITE;
 /*!40000 ALTER TABLE `resource_collection` DISABLE KEYS */;
-INSERT INTO `resource_collection` VALUES (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15);
+INSERT INTO `resource_collection` VALUES (1);
 /*!40000 ALTER TABLE `resource_collection` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -309,6 +306,34 @@ INSERT INTO `resource_type` VALUES (1,'Текст, содержащий необ
 UNLOCK TABLES;
 
 --
+-- Table structure for table `solution_resource_collection`
+--
+
+DROP TABLE IF EXISTS `solution_resource_collection`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `solution_resource_collection` (
+  `src_id` int(11) NOT NULL AUTO_INCREMENT,
+  `variant` int(11) NOT NULL,
+  `resource_collection` int(11) DEFAULT NULL,
+  PRIMARY KEY (`src_id`),
+  KEY `fk_src_resource_collection` (`resource_collection`),
+  KEY `fk_src_variant` (`variant`),
+  CONSTRAINT `fk_src_resource_collection` FOREIGN KEY (`resource_collection`) REFERENCES `resource_collection` (`resource_collection_id`),
+  CONSTRAINT `fk_src_variant` FOREIGN KEY (`variant`) REFERENCES `variant` (`variant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `solution_resource_collection`
+--
+
+LOCK TABLES `solution_resource_collection` WRITE;
+/*!40000 ALTER TABLE `solution_resource_collection` DISABLE KEYS */;
+/*!40000 ALTER TABLE `solution_resource_collection` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `task`
 --
 
@@ -325,7 +350,7 @@ CREATE TABLE `task` (
   KEY `task_idx` (`task_id`),
   CONSTRAINT `fk_task_exam_item` FOREIGN KEY (`exam_item_id`) REFERENCES `exam_item` (`exam_item_id`),
   CONSTRAINT `fk_task_problem_type` FOREIGN KEY (`problem_type_id`) REFERENCES `problem_type` (`problem_type_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -334,6 +359,7 @@ CREATE TABLE `task` (
 
 LOCK TABLES `task` WRITE;
 /*!40000 ALTER TABLE `task` DISABLE KEYS */;
+INSERT INTO `task` VALUES (1,1,5),(2,4,1);
 /*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -376,14 +402,14 @@ DROP TABLE IF EXISTS `variant`;
 CREATE TABLE `variant` (
   `variant_id` int(11) NOT NULL AUTO_INCREMENT,
   `task_id` int(11) NOT NULL,
-  `template` text NOT NULL,
-  `task_year` year(4) NOT NULL,
+  `statement` text NOT NULL,
+  `variant_year` year(4) NOT NULL,
   `solution` text NOT NULL,
   PRIMARY KEY (`variant_id`),
   KEY `fk_variant_task` (`task_id`),
   KEY `variant__idx` (`variant_id`),
   CONSTRAINT `fk_variant_task` FOREIGN KEY (`task_id`) REFERENCES `task` (`task_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -392,6 +418,7 @@ CREATE TABLE `variant` (
 
 LOCK TABLES `variant` WRITE;
 /*!40000 ALTER TABLE `variant` DISABLE KEYS */;
+INSERT INTO `variant` VALUES (1,1,'http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/tex/1stmt.tex',2019,'http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/tex/1sltn.tex'),(2,1,'http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/tex/2stmt.tex',2018,'http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/tex/2sltn.tex'),(3,2,'http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/tex/3stmt.tex',2016,'http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/tex/3sltn.tex');
 /*!40000 ALTER TABLE `variant` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -404,4 +431,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-17 16:15:36
+-- Dump completed on 2019-05-22 12:48:56

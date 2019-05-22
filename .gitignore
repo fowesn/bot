@@ -8,11 +8,11 @@
 # ресурсы по заданиям
 */files
 
+# файлы бэкапа бд
+*/dbBackup
+
 # slim
 */vendor
-
-# данные для использования mysql
-*/classes/db/dbSettings.php
 
 # лог-файлы
 */logs

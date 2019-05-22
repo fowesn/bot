@@ -1,13 +1,13 @@
--- MySQL dump 10.17  Distrib 10.3.12-MariaDB, for Win64 (AMD64)
+-- MySQL dump 10.16  Distrib 10.2.22-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: nestulov
 -- ------------------------------------------------------
--- Server version	10.3.12-MariaDB
+-- Server version	10.2.22-MariaDB-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -111,7 +111,7 @@ CREATE TABLE `input` (
   KEY `fk_input_variant` (`variant_id`),
   KEY `input_idx` (`input_id`),
   CONSTRAINT `fk_input_variant` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -140,7 +140,7 @@ CREATE TABLE `problem` (
   CONSTRAINT `fk_problem_type` FOREIGN KEY (`problem_type_id`) REFERENCES `problem_type` (`problem_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_solution` FOREIGN KEY (`problem_solution`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_statement` FOREIGN KEY (`problem_statement`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +178,7 @@ CREATE TABLE `resource` (
   KEY `fk_resource_type_idx` (`resource_type_id`),
   CONSTRAINT `fk_resource_collection` FOREIGN KEY (`resource_collection_id`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resource_type` FOREIGN KEY (`resource_type_id`) REFERENCES `resource_type` (`resource_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -191,7 +191,7 @@ DROP TABLE IF EXISTS `resource_collection`;
 CREATE TABLE `resource_collection` (
   `resource_collection_id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`resource_collection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -207,6 +207,25 @@ CREATE TABLE `resource_type` (
   `resource_type_code` varchar(255) NOT NULL,
   PRIMARY KEY (`resource_type_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `solution_resource_collection`
+--
+
+DROP TABLE IF EXISTS `solution_resource_collection`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `solution_resource_collection` (
+  `src_id` int(11) NOT NULL AUTO_INCREMENT,
+  `variant` int(11) NOT NULL,
+  `resource_collection` int(11) DEFAULT NULL,
+  PRIMARY KEY (`src_id`),
+  KEY `fk_src_resource_collection` (`resource_collection`),
+  KEY `fk_src_variant` (`variant`),
+  CONSTRAINT `fk_src_resource_collection` FOREIGN KEY (`resource_collection`) REFERENCES `resource_collection` (`resource_collection_id`),
+  CONSTRAINT `fk_src_variant` FOREIGN KEY (`variant`) REFERENCES `variant` (`variant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -226,7 +245,7 @@ CREATE TABLE `task` (
   KEY `task_idx` (`task_id`),
   CONSTRAINT `fk_task_exam_item` FOREIGN KEY (`exam_item_id`) REFERENCES `exam_item` (`exam_item_id`),
   CONSTRAINT `fk_task_problem_type` FOREIGN KEY (`problem_type_id`) REFERENCES `problem_type` (`problem_type_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -258,14 +277,14 @@ DROP TABLE IF EXISTS `variant`;
 CREATE TABLE `variant` (
   `variant_id` int(11) NOT NULL AUTO_INCREMENT,
   `task_id` int(11) NOT NULL,
-  `template` text NOT NULL,
-  `task_year` year(4) NOT NULL,
+  `statement` text NOT NULL,
+  `variant_year` year(4) NOT NULL,
   `solution` text NOT NULL,
   PRIMARY KEY (`variant_id`),
   KEY `fk_variant_task` (`task_id`),
   KEY `variant__idx` (`variant_id`),
   CONSTRAINT `fk_variant_task` FOREIGN KEY (`task_id`) REFERENCES `task` (`task_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -277,4 +296,4 @@ CREATE TABLE `variant` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-17 16:15:02
+-- Dump completed on 2019-05-22 12:49:15
