@@ -317,8 +317,8 @@ $app->get('/assignments', function (Request $request, Response $response)
     {
         switch ($filter)
         {
-            case "unsolved":
-                $data = dbAssignment::getUnsolvedAssignments($user_id);
+            case "нерешённые":
+                $data = dbAssignment::getUnsolvedProblems($user_id);
                 foreach ($data as &$problem) {
                     $problem += $user_id;
                 }

@@ -56,5 +56,3 @@ class checkDetailedAnswer implements checkAnswerInterface
         // TODO: Implement checkAnswer() method.
     }
 }
-
-?>

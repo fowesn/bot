@@ -132,7 +132,7 @@ class dbAssignment
     }
 
 
-    /** Возвращает случайно выбранное задание для пользователя из еще не решенных
+    /** Возвращает случайно выбранное задание для пользователя из еще не выданных
      ** Возможна фильтрация по теме задания или по номеру задания в КИМе
      *
      * @param $user_id integer Глобальный идентификатор пользователя
@@ -254,7 +254,7 @@ class dbAssignment
                                          INNER JOIN problem_type ON (problem_type.problem_type_id = problem.problem_type_id AND problem_type.problem_type_code  = ?) 
                                          LEFT JOIN assignment ON (assignment.problem_id = problem.problem_id AND assignment.user_id = ?) 
                                          WHERE assignment.problem_id IS NULL)');
-            $query->execute(array($filter, $user_id));
+            $query->execute(array($user_id, $filter, $user_id));
             // если не осталось нерешенных заданий по указанной теме
             if (($rows = (int)($query->fetchColumn())) === 0) {
                 throw new APIException(OUT_OF_PROBLEMS_BY_TYPE, OUT_OF_PROBLEMS_BY_TYPE_MSG, 200);
@@ -438,7 +438,7 @@ class dbAssignment
     }
 
 
-    public static function getUnsolvedAssignments(int $user_id)
+    public static function getUnsolvedProblems(int $user_id)
     {
         $conn = dbConnection::getConnection();
 
