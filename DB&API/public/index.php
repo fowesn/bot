@@ -9,7 +9,7 @@ $app = new \Slim\App();
 
 $container = $app->getContainer();
 
-$container['logger'] = function ()
+$container['logger'] = function()
 {
     $logger = new \Monolog\Logger('APIlogger');
     $file_handler = new \Monolog\Handler\StreamHandler('../logs/app.log');
@@ -104,6 +104,7 @@ $container['phpErrorHandler'] = function ($c)
 
 
 
+
 /*
  * запрос нового задания
  */
@@ -170,7 +171,6 @@ $app->post('/assignments', function (Request $request, Response $response)
     }
 
 
-
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -193,7 +193,6 @@ $app->post('/assignments', function (Request $request, Response $response)
         'data' => $data
     ], 201);
 });
-
 
 
 /*
@@ -286,7 +285,6 @@ $app->get('/assignments', function (Request $request, Response $response)
     }
 
 
-
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -317,7 +315,7 @@ $app->get('/assignments', function (Request $request, Response $response)
     {
         switch ($filter)
         {
-            case "нерешённые":
+            case "нерешенные":
                 $data = dbAssignment::getUnsolvedProblems($user_id);
                 foreach ($data as &$problem) {
                     $problem += $user_id;
@@ -327,7 +325,8 @@ $app->get('/assignments', function (Request $request, Response $response)
                 return $requestErrorHandler(
                     $response,
                     sprintf(WRONG_ENUM_PARAMETER, 'filter', implode(', ', ASSIGNMENT_FILTERS)),
-                    422);
+                    422,
+                    UNKNOWN_FILTER);
         }
     }
     // статистика по всем заданиям
@@ -341,7 +340,6 @@ $app->get('/assignments', function (Request $request, Response $response)
         'data' => $data
     ], 200);
 });
-
 
 
 /*
@@ -435,6 +433,7 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
             400);
     }
 
+
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -467,7 +466,6 @@ $app->post('/assignments/answers', function (Request $request, Response $respons
         ],
     ], 201);
 });
-
 
 
 /*
@@ -550,6 +548,7 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
             400);
     }
 
+
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -578,7 +577,6 @@ $app->get('/problems/{problem}/statement', function (Request $request, Response 
         'data' => $data
     ], 200);
 });
-
 
 
 /*
@@ -661,6 +659,7 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
             400);
     }
 
+
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -687,7 +686,6 @@ $app->get('/problems/{problem}/solution', function (Request $request, Response $
         'data' => $data
     ], 200);
 });
-
 
 
 /*
@@ -770,6 +768,7 @@ $app->get('/problems/{problem}/answer', function (Request $request, Response $re
             400);
     }
 
+
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -801,7 +800,6 @@ $app->get('/problems/{problem}/answer', function (Request $request, Response $re
 });
 
 
-
 /*
  * запрос доступных тем заданий
  */
@@ -827,7 +825,6 @@ $app->get('/problems/problem_types', function (Request $request, Response $respo
     }
 
 
-
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -839,7 +836,6 @@ $app->get('/problems/problem_types', function (Request $request, Response $respo
 
     return $response->withJson($answer, 200);
 });
-
 
 
 /*
@@ -867,7 +863,6 @@ $app->get('/resources', function (Request $request, Response $response)
     }
 
 
-
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -877,7 +872,6 @@ $app->get('/resources', function (Request $request, Response $response)
         'data' => dbResource::getResourceTypes()
     ], 200);
 });
-
 
 
 /*
@@ -964,7 +958,6 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
     }
 
 
-
     /*
      * ОБРАБОТКА ЗАПРОСА
      */
@@ -979,7 +972,6 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
             ]
     ], 200);
 });
-
 
 
 /*
@@ -1032,15 +1024,24 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
     {
         return $requestErrorHandler(
             $response,
-            sprintf(WRONG_PARAMETER_TYPE, 'year', 'number above ' . MIN_YEAR),
+            sprintf(WRONG_PARAMETER_TYPE, 'year', 'number equal to or above ' . MIN_YEAR . ' and equal to or below ' . date('Y')),
             400);
     }
     if ($year < MIN_YEAR)
     {
         return $requestErrorHandler(
             $response,
-            sprintf(WRONG_PARAMETER_TYPE, 'year', 'number above ' . MIN_YEAR),
-            422);
+            sprintf(WRONG_PARAMETER_TYPE, 'year', 'number equal to or above ' . MIN_YEAR),
+            422,
+            YEAR_BELOW_MIN);
+    }
+    if ($year > date('Y'))
+    {
+        return $requestErrorHandler(
+            $response,
+            sprintf(WRONG_PARAMETER_TYPE, 'year', 'number equal to or below ' . date('Y')),
+            422,
+            YEAR_ABOVE_MAX);
     }
     unset($requestBody['year']);
 
@@ -1071,7 +1072,6 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
             sprintf(UNKNOWN_PARAMETER, implode(', ', array_keys($requestBody))),
             400);
     }
-
 
 
     /*

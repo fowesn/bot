@@ -1,0 +1,809 @@
+#%RAML 1.0
+title: wunderAPI
+
+types:
+  status:
+    type: string | integer
+    description: Значения кодов тела ответа:<br>
+                 <ul><li>__0__ - Запрос выполнен корректно и без пользовательских ошибок</li>
+                 <li>__-1__ - Произошла ошибка в обработке запроса</li>                 
+                 <li>__"a0-0"__ - Неизвестная тема задания _(см. получение задания)_</li>
+                 <li>__"a0-1"__ - Неизвестный номер задания в КИМе _(см. получение задания)_</li>
+                 <li>__"a0-2"__ - Кончились задания для выдачи пользователю _(см. получение задания)_</li>
+                 <li>__"a0-3"__ - Кончились задание по указанной теме для выдачи пользователю _(см. получение задания)_</li>
+                 <li>__"a0-4"__ - Кончились задание под указанным номером в КИМе для выдачи пользователю _(см. получение задания)_</li>
+                 <li>__"a1-0"__ - Данное задание не было выдано пользователю _(см. проверку ответа пользователя, получение ответа, разбора, условия задания)_</li>
+                 <li>__"a1-1"__ - Неизвестный фильтр _(см. получение списка заданий в соответствии с фильтром)_</li>
+                 <li>__"u11-0"__ - Неизвестный тип предпочитаемого ресурса _(см. установление вида предпочитаемого ресурса)_</li>
+                 <li>__"u12-0"__ - Год публикации меньше допустимого _(см. установление предпочитаемого года публикации заданий)_</li>
+                 <li>__"u12-1"__ - Год публикации больше допустимого _(см. установление предпочитаемого года публикации заданий)_</li></ul>
+
+
+/assignments:
+  description: Действия конечного пользователя с заданиями
+  post:
+    description: Возвращает случайно выбранное задание для пользователя<br>
+                 Задание случайно выбирается из еще не решенных (также могут применяться другие условия)<br>
+                 Факт выдачи сохраняется
+    body:
+      application/x-www-form-urlencoded:
+        properties: 
+          type:
+            description: Если параметр не указан, то задание выбирается случайным образом из еще не решенных<br><br>
+                         Если параметр имеет тип:<br>
+                         <ul><li>string - выбирается задание __по указанной теме__ из еще не решенных</li>
+                         <li>integer - выбирается задание __под указанным номером__ в КИМе из еще не решенных</li></ul>
+            type: (integer | string)
+            required: false  
+            example: системы_счисления 
+          user:
+            description: Идентификатор пользователя в используемом сервисе
+            type: integer
+            required: true  
+            example: 98765
+          service:
+            description: Используемый сервис
+            type: string
+            required: true  
+            enum: [vk]
+            example: vk
+    responses:
+      200:
+        description: Запрос обработан корректно, но не был достигнут ожидаемый результат!
+        body:
+          application/json:
+            examples:    
+              задания кончились:
+                status: "a0-2"
+                data:
+                 message: "Stated user has no unassigned problems left!"
+              задания по указанной теме кончились:
+                status: "a0-3"
+                data:
+                 message: "Stated user has no unassigned problems with stated problem type left!"
+              задания под указанным номером в КИМе кончились:
+                status: "a0-4"
+                data:
+                 message: "Stated user has no unassigned problems with stated exam item number left!"
+      201:
+        description: Запрос выполнен корректно!
+        body:
+          application/json:
+            examples:
+              успех:
+                status: 0
+                data:
+                    problem: 12635
+                    problem_type: системы_счисления
+                    exam_item_number: 3
+                    year: 2018
+                    resource:
+                      [{
+                      name: "image61",
+                      type: "image",
+                      content: "https://i.imgur.com/aKS4k2G.jpg"
+                      }]
+      400:
+        description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+        body: 
+          application/json:
+            examples:
+              отсутствует параметр:
+                status: -1
+                data:
+                  message: "Missing required parameter 'user'!"
+              невалидные данные:
+                status: -1
+                data:
+                  message: "Parameter 'user' must be a number!"
+              лишний параметр:
+                status: -1
+                data:
+                  message: "Parameter 'query' is unprocessable!"
+      405:
+        description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+        body: 
+          application/json:
+            example:
+              status: -1
+              data:
+                message: "Using method 'PUT' is forbidden!"
+      422:
+        description: Unprocessable entity! Запрос синтаксически верен, но присутствует логическая ошибка!
+        body: 
+          application/json:
+            examples:
+              неизвестная тема задания:
+                status: "a0-0"
+                data:
+                  message: "Stated problem type does not exist!"
+              неизвестный номер задания в КИМе:
+                status: "a0-1"
+                data:
+                  message: "Stated exam item number does not exist!"
+      500:
+        description: Internal server error! Ошибка на стороне сервера!
+        body: 
+          application/json:
+            example:
+              status: -1
+              data:
+                message: "Server error occured, please try again later!"
+
+
+  get:
+    description: 
+                 Возвращает информацию об одном или нескольких выданных пользователю заданиях
+                 <ol><li>Если не передан ни один необязательный параметр, то метод возвращает статистику пользователя по всем выданным заданиям, подсчитывая число __выданных__, __решенных__, __нерешенных__ заданий и заданий, для которых пользователь __запросил правильный ответ__<br></li>
+                 <ul><li>Выданные = решенные + нерешенные + задания, для которых был запрошен ответ</li>
+                 <i><li>__Нерешенным__ считается задание, на которое __НЕ__ был дан правильный ответ __И__ для которого __НЕ__ был запрошен правильный ответ</i><br></li>
+                 <i><li>__Решенным__ считается задание, на которое был дан правильный ответ</i><br></li></ul>
+                 <li>Если передан номер задания, то метод возвращает статистику пользователя по заданию (1-3) и информацию о задании(4-6):</li>
+                 <ul><li>Количество присланных ответов</li>
+                 <li>Правильный ответ прислан (да/нет)</li>
+                 <li>Правильный ответ запрошен (да/нет)</li>
+                 <li>Тема задания</li>
+                 <li>Год публикации задания</li>
+                 <li>Номер задания в КИМе</li></ul>
+                 <li>Если передан фильтр, то метод вернет список заданий в соответствии с фильтром</li>
+                 <li>__Оба параметра одновременно передать нельзя!__</li></ol>
+    queryParameters: 
+      problem:
+        description: Идентификатор выданного пользователю задания 
+        type: integer
+        required: false  
+        example: 123456
+      filter:
+        description: Фильтр заданий
+        type: string
+        required: false
+        enum: [нерешенные]        
+      user:
+        description: Идентификатор пользователя в используемом сервисе
+        type: integer
+        required: true  
+        example: 98765
+      service:
+        description: Используемый сервис
+        type: string
+        required: true  
+        enum: [vk]
+        example: vk
+    responses:
+      200:
+        description: Запрос выполнен корректно!
+        body:
+          application/json:
+            examples:
+                статистика одного задания:
+                  status: 0
+                  data:
+                    correct_answer_provided: false
+                    correct_answer_requested: false
+                    answers_provided: 5
+                    year: 2019,
+                    problem_type: "кодирование_информации"
+                    exam_item_number: 5
+                статистика всех заданий:
+                  status: 0
+                  data:
+                    overall: 2
+                    solved: 0
+                    answer_requested: 0
+                    unsolved: 2
+                фильтрация заданий:
+                  status: 0
+                  data: [
+                    107,
+                    109
+                  ]
+                задание не было выдано:
+                  status: "a10"
+                  data:
+                    message: "The stated problem was not assigned to the stated user!"       
+      400:
+        description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+        body: 
+          application/json:
+            examples:
+              отсутствует параметр:
+                status: -1
+                data:
+                  message: "Missing required parameter 'user'!"
+              невалидные данные:
+                status: -1
+                data:
+                  message: "Parameter 'user' must be a number!"
+              лишний параметр:
+                status: -1
+                data:
+                  message: "Parameter 'query' is unprocessable!"
+      405:
+        description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+        body: 
+          application/json:
+            example:
+              status: -1
+              data:
+                message: "Using method 'PUT' is forbidden!"
+      422:
+        description: Unprocessable entity! Запрос синтаксически верен, но присутствует логическая ошибка!
+        body: 
+          application/json:
+            examples:
+              неизвестный фильтр:
+                status: "a1-1"
+                data:
+                  message: "Parameter 'filter' must be on of: нерешенные!"      
+      500:
+        description: Internal server error! Ошибка на стороне сервера!
+        body: 
+          application/json:
+            example:
+              status: -1
+              data:
+                message: "Server error occured, please try again later!"
+
+
+
+  
+  /answers:    
+    post:
+      description: Проверяет правильность ответа пользователя<br>
+                   Ответ проверяется только в том случае, если ранее пользователь запросил указанное задание<br>
+                   Дополнительно сохраняет ответ в статистику, если до текущего обращения пользователь __НЕ__ запрашивал правильного ответа __И__ не присылал правильного ответа<br>
+      body:
+        application/x-www-form-urlencoded:
+          properties:
+            answer:
+              description: Ответ, присланный пользователем
+              type: string
+              required: true
+              example: '1342'
+            problem: 
+              description: Идентификатор выданного пользователю задания
+              type: integer
+              required: true  
+              example: 123456                 
+            user:
+              description: Идентификатор пользователя, приславшего ответ, в используемом сервисе
+              type: integer
+              required: true  
+              example: 98765
+            service:
+              description: Используемый сервис
+              type: string
+              required: true  
+              enum: [vk]
+              example: vk                
+      responses: 
+        200: 
+          description: Запрос обработан корректно, но не был достигнут ожидаемый результат!
+          body:
+            application/json:
+              examples:     
+                задание не было выдано:
+                  status: "a1-0"
+                  data:
+                    message: "The stated problem was not assigned to the stated user!"
+        201:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              examples:              
+                успех:                                  
+                  status: 0
+                  data:
+                    answer_correct: true
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                отсутствует параметр:
+                  status: -1
+                  data:
+                    message: "Missing required parameter 'user'!"
+                невалидные данные:
+                  status: -1
+                  data:
+                    message: "Parameter 'user' must be a number!"
+                лишний параметр:
+                  status: -1
+                  data:
+                    message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Using method 'PUT' is forbidden!"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!"
+
+
+
+/problems:
+  description: Тексты заданий, ответы, решения
+  /{problem}/answer:
+    uriParameters:
+      problem: 
+        description: Идентификатор выданного пользователю задания
+        type: integer
+        required: true  
+        example: 123456        
+    get:
+      description: Возвращает ответ задания<br>
+                   Ответ к заданию выдается только в том случае, если ранее пользователь запросил указанное задание<br>
+                   Ответ выдается в текстовом виде<br>
+                   После выдачи правильного ответа пользователю факт дачи правильного ответа не сохраняется                   
+      queryParameters:
+        user:
+          description: Идентификатор пользователя, запросившего ответ, в используемом сервисе
+          type: integer
+          required: true  
+          example: 98765
+        service:
+          description: Используемый сервис
+          type: string
+          required: true  
+          enum: [vk]
+          example: vk
+      responses:
+        200:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              examples:
+                успех:
+                  status: 0
+                  data:
+                    answer: 1432
+                задание не было выдано:
+                  status: "a1-0"
+                  data:
+                   message: "The stated problem was not assigned to the stated user!"
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                отсутствует параметр:
+                  status: -1
+                  data:
+                    message: "Missing required parameter 'user'!"
+                невалидные данные:
+                  status: -1
+                  data:
+                    message: "Parameter 'user' must be a number!"
+                лишний параметр:
+                  status: -1
+                  data:
+                    message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Using method 'POST' is forbidden!"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!" 
+
+
+
+  /{problem}/solution:
+    uriParameters: 
+      problem: 
+        description: Идентификатор выданного пользователю задания
+        type: integer
+        required: true  
+        example: 123456       
+    get:
+      description: Возвращает разбор задания<br>
+                   Разбор задания выдается только в том случае, если ранее пользователь запросил указанное задание <br>
+                   Разбор выдается в виде ресурса, указанного пользователем (если доступно)
+      queryParameters:
+        user:
+          description: Идентификатор пользователя, запросившего правильный ответ, в используемом сервисе
+          type: integer
+          required: true  
+          example: 98765
+        service:
+          description: Используемый сервис
+          type: string
+          required: true  
+          enum: [vk]
+          example: vk
+      responses: 
+        200:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              examples:
+                успех:                  
+                  status: 0
+                  data:
+                    resource:                  
+                      name: "image61"
+                      type: "image"
+                      content: "https://i.imgur.com/aKS4k2G.jpg"
+                задание не было выдано:
+                  status: "a1-0"
+                  data:
+                   message: "The stated problem was not assigned to the stated user!" 
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                отсутствует параметр:
+                  status: -1
+                  data:
+                    message: "Missing required parameter 'user'!"
+                невалидные данные:
+                  status: -1
+                  data:
+                    message: "Parameter 'user' must be a number!"
+                лишний параметр:
+                  status: -1
+                  data:
+                    message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Using method 'POST' is forbidden!"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!"
+
+
+
+  /{problem}/statement:
+    uriParameters: 
+      problem: 
+        description: Идентификатор выданного пользователю задания
+        type: integer
+        required: true  
+        example: 123456
+    get:
+      description: Возвращает условие задания<br>
+                   Условие задания выдается только в том случае, если ранее пользователь запросил указанное задание <br>
+                   Условие выдается в виде ресурса, указанного пользователем (если доступно)
+      queryParameters:
+        user:
+          description: Идентификатор пользователя, запросившего условие, в используемом сервисе
+          type: integer
+          required: true  
+          example: 98765
+        service:
+          description: Используемый сервис
+          type: string
+          required: true  
+          enum: [vk]
+          example: vk
+      responses: 
+        200:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              examples:
+                успех:
+                  status: 0
+                  data:
+                    problem: 12635
+                    problem_type: системы_счисления
+                    exam_item_number: 3
+                    year: 2018
+                    resource:                  
+                      name: "image61"
+                      type: "image"
+                      content: "https://i.imgur.com/aKS4k2G.jpg"
+                задание не было выдано:
+                  status: "a1-0"
+                  data:
+                   message: "The stated problem was not assigned to the stated user!" 
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                отсутствует параметр:
+                  status: -1
+                  data:
+                    message: "Missing required parameter 'user'!"
+                невалидные данные:
+                  status: -1
+                  data:
+                    message: "Parameter 'user' must be a number!"
+                лишний параметр:
+                  status: -1
+                  data:
+                    message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Using method 'POST' is forbidden!"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!"
+  /problem_types:
+    description: Темы заданий
+    get:
+      description: Возвращает список доступных тем заданий<br>
+                   Любая из тем, возвращенных данным методом, может быть использована для получения заданий по теме
+      responses:
+        200:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              example:
+                status: 0
+                data: ["системы_счисления", "массивы", "псевдокопися"]
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                лишний параметр:
+                  status: -1
+                  data:
+                    message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Using method 'POST' is forbidden!"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!"
+
+
+/resources:
+  description: Ресурсы, предоставляемые конечному пользователю
+  get:
+    description: Возвращает список доступных для выдачи типов ресурсов<br>      
+                 <i>Например:</i> текст, pdf-файл, изображение<br>
+                 Любой из типов ресурсов, возвращенных данным методом, может быть использован для установления предпочитаемого вида ресурса<br>
+                 <b>Некоторые элементы могут не иметь представлений в виде определенных ресурсов</b>     
+    responses:
+      200:
+        description: Запрос выполнен корректно!
+        body:
+          application/json:
+            example:
+              status: 0
+              data: ["text", "pdf", "image", "link"]
+      400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                лишний параметр:
+                  status: -1
+                  data:
+                    message: "Parameter 'query' is unprocessable!"
+      405:
+        description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+        body: 
+          application/json:
+            example:
+              status: -1
+              data:
+                message: "Using method 'POST' is forbidden!"
+      500:
+        description: Internal server error! Ошибка на стороне сервера!
+        body: 
+          application/json:
+            example:
+              status: -1
+              data:
+                message: "Server error occured, please try again later!"
+
+
+
+/users:
+  description: Работа с пользователями (предпочитаемый тип ресурса и год)
+  /{user}/resource:
+    uriParameters:
+      user: 
+        description: Идентификатор пользователя
+        type: integer
+        required: true  
+        example: 123456
+    put:
+      description: Устанавливает вид предпочитаемого ресурса<br>
+                   Установив вид предпочитаемого ресурса, пользователь будет получать определенные элементы именно в указанном представлении<br>
+                   <b>Предпочитаемый ресурс по умолчанию - текст</b><br>
+                   <b>Некоторые элементы могут не иметь представлений в виде определенных ресурсов</b>
+      body:
+        application/x-www-form-urlencoded:
+          properties:
+            resource_type:
+              description: Устанавливаемый вид предпочитаемого ресурса
+              type: string
+              required: true
+              example: "image"
+            service:
+              description: Используемый сервис
+              type: string
+              required: true  
+              enum: [vk]
+              example: "vk"                    
+      responses: 
+        200:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              examples:
+                успех:
+                  status: 0
+                  data:
+                    user: 1
+                    resource_type: "pdf"
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                отсутствует параметр:
+                  status: -1
+                  data:
+                    message: "Missing required parameter 'user'!"
+                невалидные данные:
+                  status: -1
+                  data:
+                    message: "Parameter 'user' must be a number!"
+                лишний параметр:
+                    status: -1
+                    data:
+                      message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:                
+                status: -1
+                data:
+                  message: "Using method 'POST' is forbidden!"
+        422:
+          description: Unprocessable entity! Запрос синтаксически верен, но присутствует логическая ошибка!
+          body: 
+            application/json:
+              example:
+                неизвестный тип ресурса:
+                  status: "u11-0"
+                  data:
+                    message: "Stated resource type does not exist!"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!"
+
+  /{user}/year:
+    uriParameters:
+      user: 
+        description: Идентификатор пользователя
+        type: integer
+        required: true  
+        example: 123456
+    put:
+      description: Устанавливает предпочитаемый год публикации заданий<br>
+                   Установив год, пользователь может получать задания, которые были опубликованы в период времени с указанного года до текущего (предыдущего) года<br>
+                   <b>Предпочитаемый год по умолчанию - последний год публикации заданий (текущий или предыдущий)</b><br>                   
+      body:
+        application/x-www-form-urlencoded:
+          properties:
+            year:
+              description: Устанавливаемый год
+              type: integer
+              required: true
+              example: 2016
+            service:
+              description: Используемый сервис
+              type: string
+              required: true  
+              enum: [vk]
+              example: "vk"                    
+      responses: 
+        200:
+          description: Запрос выполнен корректно!
+          body:
+            application/json:
+              examples:
+                успех:
+                  status: 0
+                  data:
+                    user: 1
+                    year: 2018
+        400:
+          description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
+          body: 
+            application/json:
+              examples:
+                отсутствует параметр:
+                  status: -1
+                  data:
+                    message: "Missing required parameter 'user'!"
+                невалидные данные:
+                  status: -1
+                  data:
+                    message: "Parameter 'user' must be a number!"
+                лишний параметр:
+                    status: -1
+                    data:
+                      message: "Parameter 'query' is unprocessable!"
+        405:
+          description: Method not allowed! Запрошенный ресурс не поддерживает указанное действие!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Using method 'POST' is forbidden!"
+        422:
+          description: Unprocessable entity! Запрос синтаксически верен, но присутствует логическая ошибка!
+          body: 
+            application/json:
+              examples:
+                указанный год меньше минимального:
+                  status: "u12-0"
+                  data:
+                    message: "Parameter 'year' must be a number equal to or above 2013"
+                указанный год больше максимального:
+                  status: "u12-1"
+                  data:
+                    message: "Parameter 'year' must be a number equal to or below 2019"
+        500:
+          description: Internal server error! Ошибка на стороне сервера!
+          body: 
+            application/json:
+              example:
+                status: -1
+                data:
+                  message: "Server error occured, please try again later!"
