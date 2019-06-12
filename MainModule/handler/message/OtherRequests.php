@@ -16,24 +16,20 @@ class OtherRequests
      * @return string
      */
     public static function getThemesList() {
-        $url = HOST_API . '/problem_types/problem_type';
+        $url = HOST_API . '/problems/problem_types';
         //проверка кодов http
         $code = substr(get_headers($url)[0], 9, 3);
-        if($code != 200)
-            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
-        else {
+
+        if($code == 200)
+        {
             $result = json_decode(file_get_contents($url));
-            //проверка ошибок пользователя
-            if ($result->success !== "true") {
-                $message = $result->error->message;
-            } else {
-                //если ошибок нет
-                $message = "У меня есть задания по следующим темам:\r\n\r\n";
-                foreach ($result->data as $theme)
-                    $message .= $theme . "\r\n";
-            }
+            $message = "У меня есть задания по следующим темам:\r\n\r\n";
+            foreach ($result->data as $theme)
+                $message .= $theme . "\r\n";
             $message .= "\r\n\r\nЧтобы получить задание по одной из тем, напиши мне \"задание [название темы]\".";
         }
+        else
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
         return $message;
     }
 
