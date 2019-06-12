@@ -95,10 +95,39 @@ class OtherRequests
      * @param $userID
      * @param $preferredYear
      * @return array
+     * @throws \Exception
      */
     public static function setUserPreferredYear($userID, $preferredYear)
     {
-        $message = $userID . ' ' . $preferredYear;
+        if(!isset($userID))
+            throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
+        $data = array('year' => $preferredYear, 'service' => 'vk');
+        $data_query = http_build_query($data);
+
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, HOST_API . '/users/' . $userID . '/year');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_query);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = json_decode(curl_exec($ch));
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if($code == 200)
+            $message = "Отлично, теперь я буду присылать тебе задания, появившиеся в " . $preferredYear . " году или позже!";
+        elseif ($code == 422)
+        {
+            if ($result->status == 'u12-0')
+                $message = "Прости, но у меня нет заданий " . $preferredYear . " года. Минмальное значение нижней границы диапазона годов - 2013 год.";
+            else if ($result->status == 'u12-1')
+                $message = "Ты не можещь установить нижнюю границу диапазона годов выше текущего года, я не умею присылать задания из будущего :(";
+            else
+                $message = "Я не могу установить такую нижнюю границу диапазона годов выдаваемых заданий!";
+        }
+        else
+            $message = $code . ". " . self::$server_error_message;
         return array("user_id" => $userID, "message" => $message);
     }
 
