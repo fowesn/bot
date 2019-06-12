@@ -41,24 +41,20 @@ class OtherRequests
      * @return string
      */
     public static function getResourceTypesList() {
-        $url = HOST_API . '/resources/resource';
+        $url = HOST_API . '/resources';
         //проверки кодов http
         $code = substr(get_headers($url)[0], 9, 3);
-        if($code != 200)
-            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
-        else {
+        if($code == 200)
+        {
             $result = json_decode(file_get_contents($url));
-            //проверка ошибок пользователя
-            if ($result->success !== "true") {
-                $message = $result->error->message;
-            } else {
-                //если ошибок нет
-                $message = "Вот список ресурсов, в виде которых я могу присылать тебе задания:\r\n\r\n";
-                foreach ($result->data as $resource)
-                    $message .= $resource . "\r\n";
-            }
+            $message = "Вот список ресурсов, в виде которых я могу присылать тебе задания:\r\n\r\n";
+            foreach ($result->data as $resource)
+                $message .= $resource . "\r\n";
             $message .= "\r\n\r\nЧтобы установить один из ресурсов, напиши мне \"ресурс [название ресурса]\"";
         }
+        else
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
+
         return $message;
     }
 
