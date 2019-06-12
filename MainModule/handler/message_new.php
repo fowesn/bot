@@ -99,7 +99,7 @@ class message_new
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::resource()));
                 else
-					VKAPI::messageSend(message\OtherRequests::setUserPreferredResource($data->object->user_id, $user_message[1]));
+					VKAPI::messageSend(message\OtherRequests::setUserPreferredResource($data->object->user_id, $user_message[0]));
                 break;
 
 

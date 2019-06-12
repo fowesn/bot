@@ -68,13 +68,12 @@ class OtherRequests
     {
         if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-        $preferredResource = mb_convert_encoding($preferredResource, 'utf-8', mb_detect_encoding($preferredResource));
-        $data = array('resource_type' => urlencode($preferredResource), 'user_id' => (string)$userID, 'service' => 'vk');
+        $data = array('resource_type' => $preferredResource, 'service' => 'vk');
         $data_query = http_build_query($data);
 
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, HOST_API . '/resources/resource');
+        curl_setopt($ch, CURLOPT_URL, HOST_API . '/users/' . $userID . '/resource');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_query);
@@ -83,15 +82,12 @@ class OtherRequests
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        //проверка ошибок
-        if ($code == 404 || $code == 500)
-            $message = $code . ". " . self::$server_error_message;
-        else if ($result->success !== "true")
-            $message = $result->error->message;
-
-        //если нет ошибок, формирование сбщ пользователю
-        else
+        if($code == 200)
             $message = "Ресурс \"" . $preferredResource . "\" установлен успешно!";
+        elseif ($code == 422)
+            $message = "Такого ресурса у меня нет. Чтобы посмотреть список ресурсов, напиши мне \"ресурсы\"";
+        else
+            $message = $code . ". " . self::$server_error_message;
         return array("user_id" => $userID, "message" => $message);
     }
 
