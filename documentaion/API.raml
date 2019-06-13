@@ -1,5 +1,5 @@
 #%RAML 1.0
-title: wunderAPI
+title: API
 
 types:
   status:
@@ -28,7 +28,7 @@ types:
     body:
       application/x-www-form-urlencoded:
         properties: 
-          type:
+          filter:
             description: Если параметр не указан, то задание выбирается случайным образом из еще не решенных<br><br>
                          Если параметр имеет тип:<br>
                          <ul><li>string - выбирается задание __по указанной теме__ из еще не решенных</li>
@@ -77,11 +77,11 @@ types:
                     problem_type: системы_счисления
                     exam_item_number: 3
                     year: 2018
-                    resource:
+                    resources:
                       [{
-                      name: "image61",
-                      type: "image",
-                      content: "https://i.imgur.com/aKS4k2G.jpg"
+                        name: "image61",
+                        type: "image",
+                        content: "https://i.imgur.com/aKS4k2G.jpg"
                       }]
       400:
         description: Bad request! Отсутствует один или несколько обязательных параметров и/или данные не валидны!
@@ -439,10 +439,12 @@ types:
                 успех:                  
                   status: 0
                   data:
-                    resource:                  
-                      name: "image61"
-                      type: "image"
-                      content: "https://i.imgur.com/aKS4k2G.jpg"
+                    resources:
+                      [{
+                        name: "image61",
+                        type: "image",
+                        content: "https://i.imgur.com/aKS4k2G.jpg"
+                      }]
                 задание не было выдано:
                   status: "a1-0"
                   data:
@@ -519,10 +521,12 @@ types:
                     problem_type: системы_счисления
                     exam_item_number: 3
                     year: 2018
-                    resource:                  
-                      name: "image61"
-                      type: "image"
-                      content: "https://i.imgur.com/aKS4k2G.jpg"
+                    resources:                  
+                      [{
+                        name: "image61",
+                        type: "image",
+                        content: "https://i.imgur.com/aKS4k2G.jpg"
+                      }]
                 задание не было выдано:
                   status: "a1-0"
                   data:

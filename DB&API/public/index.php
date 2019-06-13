@@ -909,7 +909,6 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
             sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset($requestBody['user']);
 
 
     // валидация парамтра resource_type
@@ -1009,7 +1008,6 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
             sprintf(WRONG_QUERY_ATTRIBUTE_TYPE, 'user', 'non-negative integer'),
             400);
     }
-    unset($requestBody['user']);
 
 
     // валидация парамтра year
@@ -1088,6 +1086,8 @@ $app->put('/users/{user}/year', function (Request $request, Response $response)
         ]
     ], 200);
 });
+
+
 
 $app->run();
 ?>
