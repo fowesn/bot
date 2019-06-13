@@ -74,15 +74,49 @@ class Task
             $message .= "\r\n\r\nЧтобы повторно получить условие одного из этих заданий, напиши мне \"условие [номер задания]\"";
         }
         else
-            $message = $code . ". " . self::$server_error_message . "\r\n\r\n" . file_get_contents($url);
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
 
         return array("user_id" => $userID, "message" => $message);
     }
 
+    /**
+     * @param $userID
+     * @param $taskID
+     * @return array
+     * @throws \Exception
+     */
     public static function getTaskAgain($userID, $taskID)
     {
-        $message = $userID . ' ' . $taskID;
-        return array("user_id" => $userID, "message" => $message);
+        $url = HOST_API . '/problems/' . $taskID . '/statement?' . http_build_query(array("user" => $userID, "service" => 'vk'));
+        //проверки кодов http
+        $code = substr(get_headers($url)[0], 9, 3);
+        if($code == 200)
+        {
+            $result = json_decode(file_get_contents($url));
+            if($result->status === 'a1-0') {
+                $message = "Задание с таким номером я тебе не выдавал. Чтобы посмотреть список номеров нерешённых тобой заданий, напиши мне \"задания\"";
+            }
+            else {
+                // если ошибок нет, то собирается сбщ с заданием
+                $uniqueNumber = $result->data->problem;
+                $message = "Задание номер " . $uniqueNumber . ".\r\n\r\n";
+                // куча напоминаний о том, как прислать ответ и попросить разбор
+                $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $uniqueNumber . " [ответ]\".\r\n" .
+                    "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор " . $uniqueNumber . "\".\r\n" .
+                    "Если ты хочешь узнать правильный ответ, напиши \"ответ " . $uniqueNumber . "\".\r\n";
+
+                $statement = self::getStatementFromJSON($userID, $uniqueNumber, $result);
+                $message .= $statement["message"];
+                $attachment = $statement["attachment"];
+            }
+        }
+        else
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
+
+        if(isset($attachment))
+            return array("user_id" => $userID, "message" => $message, "attachment" => $attachment);
+        else
+            return array("user_id" => $userID, "message" => $message);
     }
 
 	/**
@@ -122,30 +156,10 @@ class Task
             $message .= "Чтобы отправить мне ответ на это задание, напиши \"" . $uniqueNumber . " [ответ]\".\r\n" .
                 "Если ты ещё не умеешь решать такие задания, я могу объяснить его тебе. Для этого напиши мне \"разбор " . $uniqueNumber . "\".\r\n" .
                 "Если ты хочешь узнать правильный ответ, напиши \"ответ " . $uniqueNumber . "\".\r\n";
-            for ($i = 0; $i < count($result->data); $i++)
-                switch ($result->data->resources[$i]->type) {
-                    case 'pdf':
-                        // тут нужен attachment документа
-                        $attachment = VKAPI::documentAttachmentMessageSend($userID, $result->data->resources[$i]->content,
-                            "задание " . $uniqueNumber, "бот по информатике");
-                        break;
-                    case 'изображение':
-                        // attachment изображения
-                        $attachment = VKAPI::pictureAttachmentMessageSend($userID, $result->data->resources[$i]->content);
-                        break;
-                    case 'ссылка':
-                        $message .= "\r\n" . $result->data->resources[$i]->content;
-                        break;
-                    case 'текст':
-						if(preg_match("#^http#i", $result->data->resources[$i]->content))
-							$attachment = VKAPI::pictureAttachmentMessageSend($userID, $result->data->resources[$i]->content);
-						else
-							$message .= "\r\n" . $result->data->resources[$i]->content;
-                        break;
-                    default:
-                        $message .= "\r\n" . $result->data->resources[$i]->content;
-                        break;
-                }
+
+            $statement = self::getStatementFromJSON($userID, $uniqueNumber, $result);
+            $message .= $statement["message"];
+            $attachment = $statement["attachment"];
         }
         else if ($code == 200)
         {
@@ -185,5 +199,45 @@ class Task
             return array("user_id" => $userID, "message" => $message, "attachment" => $attachment);
         else
             return array("user_id" => $userID, "message" => $message);
+    }
+
+    /**
+     * @param $userID
+     * @param $uniqueNumber
+     * @param $result
+     * @return array
+     * @throws \Exception
+     */
+    private static function getStatementFromJSON($userID, $uniqueNumber, $result)
+    {
+        $message = '';
+        for ($i = 0; $i < count($result->data); $i++)
+            switch ($result->data->resources[$i]->type) {
+                case 'pdf':
+                    // тут нужен attachment документа
+                    $attachment = VKAPI::documentAttachmentMessageSend($userID, $result->data->resources[$i]->content,
+                        "задание " . $uniqueNumber, "бот по информатике");
+                    break;
+                case 'изображение':
+                    // attachment изображения
+                    $attachment = VKAPI::pictureAttachmentMessageSend($userID, $result->data->resources[$i]->content);
+                    break;
+                case 'ссылка':
+                    $message .= "\r\n" . $result->data->resources[$i]->content;
+                    break;
+                case 'текст':
+                    if(preg_match("#^http#i", $result->data->resources[$i]->content))
+                        $attachment = VKAPI::pictureAttachmentMessageSend($userID, $result->data->resources[$i]->content);
+                    else
+                        $message .= "\r\n" . $result->data->resources[$i]->content;
+                    break;
+                default:
+                    $message .= "\r\n" . $result->data->resources[$i]->content;
+                    break;
+            }
+        if(isset($attachment))
+            return array("message" => $message, "attachment" => $attachment);
+        else
+            return array("message" => $message);
     }
 }
