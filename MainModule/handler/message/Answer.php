@@ -21,29 +21,22 @@ class Answer
 	public static function getAnswer($userID, $taskID) {
 	    if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-		$task = (int)$userID ^ (int)$taskID;
-		$params = array("problem_id" => $task, "user_id" => $userID, "service" => "vk");
-		$request_params = http_build_query($params);
+        //проверка кодов http
+        $url = HOST_API . '/problems/' . $taskID . '/answer?' . http_build_query(array("user" => $userID, "service" => 'vk'));
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, HOST_API . '/problems/answer?' . $request_params);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-		$result = curl_exec($ch);
-		$result = json_decode($result);
-		//проверка кодов http
-		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if ($code != 200) {
-			$message = $code . ". " . self::$server_error_message;
-			return array("user_id" => $userID, "message" => $message);
-		}
+        $code = substr(get_headers($url)[0], 9, 3);
 
-		//ошибки пользователя
-		if ($result->success !== "true") {
-			$message = $result->error->message;
-		} else {
-			// если ошибок нет, то собирается сообщение с ответом
-			$message = $result->answer;
-		}
+        if($code == 200)
+        {
+            $result = json_decode(file_get_contents($url));
+            if($result->status === 'a1-0')
+                $message = "Задание с таким номером я тебе не выдавал. Чтобы посмотреть список номеров нерешённых тобой заданий, напиши мне \"задания\"";
+            else
+                $message = 'Ответ на задание ' . $taskID . ': ' . $result->data->answer;
+        }
+        else
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n";
+
 		return array("user_id" => $userID, "message" => $message);
 	}
 

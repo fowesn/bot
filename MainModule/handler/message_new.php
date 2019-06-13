@@ -111,7 +111,11 @@ class message_new
 					VKAPI::messageSend(array("user_id" => $data->object->user_id,
 						"message" => message\Intelligence::answer()));
                 else
-					VKAPI::messageSend(message\Answer::getAnswer($data->object->user_id, $user_message[0]));
+                    if(preg_match("/^\d+$/", $user_message[0]))
+					    VKAPI::messageSend(message\Answer::getAnswer($data->object->user_id, $user_message[0]));
+                    else
+                        VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                            "message" =>message\Intelligence::answer()));
                 break;
 
 
