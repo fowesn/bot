@@ -62,7 +62,20 @@ class Task
      */
     public static function getIncompletedTasksList($userID)
     {
-        $message = $userID;
+        $url = HOST_API . '/assignments?' . http_build_query(array("filter" => 'нерешенные', "user" => $userID, "service" => 'vk'));
+        //проверки кодов http
+        $code = substr(get_headers($url)[0], 9, 3);
+        if($code == 200)
+        {
+            $result = json_decode(file_get_contents($url));
+            $message = "Список номеров ранее запрошенных тобой нерешённых заданий:\r\n\r\n";
+            foreach ($result->data as $taskList)
+                $message .= $taskList . "\r\n";
+            $message .= "\r\n\r\nЧтобы повторно получить условие одного из этих заданий, напиши мне \"условие [номер задания]\"";
+        }
+        else
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n" . file_get_contents($url);
+
         return array("user_id" => $userID, "message" => $message);
     }
 
