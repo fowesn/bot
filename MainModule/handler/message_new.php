@@ -162,7 +162,8 @@ class message_new
                 if(count($user_message) == 0)
                     VKAPI::messageSend(message\Statistics::getTasksStatistics($data->object->user_id));
                 else if (count($user_message) == 1 && preg_match("/^\d+$/", $user_message[0]))
-                    VKAPI::messageSend(message\Statistics::getTaskStatistics($data->object->user_id, $user_message[0]));
+                    VKAPI::messageSend(array("user_id" => $data->object->user_id,
+                        "message" => self::deleteUnderscore(message\Statistics::getTaskStatistics($data->object->user_id, $user_message[0]))));
                 else
                     VKAPI::messageSend(array("user_id" => $data->object->user_id,
                         "message" => message\Intelligence::statistics()));
