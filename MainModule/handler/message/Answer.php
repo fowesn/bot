@@ -105,33 +105,29 @@ class Answer
 	public static function checkUserAnswer($userID, $taskID, $answer) {
         if(!isset($userID))
             throw new \Exception(__FILE__ . " : " . __LINE__ . " Не указан user_id");
-		// post
-		$task = (int)$userID ^ (int)$taskID;
-		$params = array("problem_id" => $task, "answer" => $answer, "user_id" => $userID, "service" => "vk");
-		$request_params = http_build_query($params);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, HOST_API . '/problems/answer');
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $request_params);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$result = json_decode(curl_exec($ch));
-		curl_close($ch);
 
-		//проверка кодов http
-//        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-//        if ($code !== 200) {
-//            $message = $code . ". " . self::$server_error_message;
-//            return array("user_id" => $userID, "message" => $message);
-//        }
 
-		//ошибки пользователя
-		if ($result->success !== "true") {
-			$message = $result->error->message;
-		} else {
-			// если ошибок нет, то собирается сообщение с результатом проверки ответа пользователя
-			$message = (bool)($result->result) ? "Верно" : "Неверно";
-		}
+        $params = array("problem" => $taskID, "answer" => $answer, "user" => $userID, "service" => "vk");
+        $request_params = http_build_query($params);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, HOST_API . '/assignments/answers');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $request_params);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = json_decode(curl_exec($ch));
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+
+        if($code == 200)
+            $message = "Задание с таким номером я тебе не выдавал. Чтобы посмотреть список номеров нерешённых тобой заданий, напиши мне \"задания\"";
+        else if ($code == 201)
+            $message = $result->data->answer_correct ? "Супер, всё верно!" :
+                "Где-то закралась ошибка! Неверно, попробуй ещё!\r\n\r\n
+            Чтобы получить разбор этого задания, напиши мне \"разбор " . $taskID . "\", а для получения ответа напиши \"ответ " . $taskID . "\".";
+        else
+            $message = $code . ". " . self::$server_error_message . "\r\n\r\n" . json_encode($result);
         return array("user_id" => $userID, "message" => $message);
 
 	}
