@@ -127,7 +127,7 @@ class Answer
                 "Где-то закралась ошибка! Неверно, попробуй ещё!\r\n\r\n
             Чтобы получить разбор этого задания, напиши мне \"разбор " . $taskID . "\", а для получения ответа напиши \"ответ " . $taskID . "\".";
         else
-            $message = $code . ". " . self::$server_error_message . "\r\n\r\n" . json_encode($result);
+            $message = $code . ". " . self::$server_error_message;
         return array("user_id" => $userID, "message" => $message);
 
 	}
