@@ -1,4 +1,4 @@
-*.iml
+﻿*.iml
 *.xml
 *setting.php
 
@@ -7,9 +7,6 @@
 
 # ресурсы по заданиям
 */files
-
-# файлы бэкапа бд
-*/dbBackup
 
 # slim
 */vendor
