@@ -1,8 +1,8 @@
--- MySQL dump 10.16  Distrib 10.2.22-MariaDB, for Linux (x86_64)
+-- MySQL dump 10.16  Distrib 10.2.25-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: nestulov
 -- ------------------------------------------------------
--- Server version	10.2.22-MariaDB-log
+-- Server version	10.2.25-MariaDB-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -30,7 +30,7 @@ CREATE TABLE `answer` (
   PRIMARY KEY (`answer_id`),
   KEY `fk_solution_assignment1_idx` (`assignment_id`),
   CONSTRAINT `fk_solution_assignment1` FOREIGN KEY (`assignment_id`) REFERENCES `assignment` (`assignment_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,6 +39,7 @@ CREATE TABLE `answer` (
 
 LOCK TABLES `answer` WRITE;
 /*!40000 ALTER TABLE `answer` DISABLE KEYS */;
+INSERT INTO `answer` VALUES (10,89,'36174','2019-06-15 09:29:31'),(11,89,'36714','2019-06-15 09:29:49'),(12,90,'2ррв6','2019-06-16 13:30:57');
 /*!40000 ALTER TABLE `answer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -62,7 +63,7 @@ CREATE TABLE `assignment` (
   KEY `fk_assignment_user1_idx` (`user_id`),
   CONSTRAINT `fk_assignment_problem1` FOREIGN KEY (`problem_id`) REFERENCES `problem` (`problem_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_assignment_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -71,6 +72,7 @@ CREATE TABLE `assignment` (
 
 LOCK TABLES `assignment` WRITE;
 /*!40000 ALTER TABLE `assignment` DISABLE KEYS */;
+INSERT INTO `assignment` VALUES (89,72,53,'36714','2019-06-15 09:29:49',1,0),(90,61,53,'89cd','2019-06-16 13:31:43',0,1);
 /*!40000 ALTER TABLE `assignment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -158,7 +160,7 @@ CREATE TABLE `input` (
 
 LOCK TABLES `input` WRITE;
 /*!40000 ALTER TABLE `input` DISABLE KEYS */;
-INSERT INTO `input` VALUES (1,1,'О,В,Д,П,А 0,1,2,3,4 ВОДОПАД шестнадцатеричным','22162',0),(2,1,'Д,Х,Р,О 0,1,2,3,4 ХОРОВОД восьмеричным','36714',0),(3,1,'О,К,Г,Д,Р 0,1,2,3,4 ГОРОДОК восьмеричным','42061',0),(4,1,'Х,Е,Л,О,Д 0,1,2,3,4 ЛЕДОХОД шестнадцатеричным','999C',0),(5,1,'И,Д,Т,О,Х 0,1,2,3,4 ТИХОХОД шестнадцатеричным','89CD',0),(6,2,'А,Б,В,Г А-10,Б-11,В-110,Г-0 ВБГАГВ шестнадцатеричный','5B1A',0),(7,2,'А,Б,В,Г А-10,Б-11,В-110,Г-0 ВАГБААГВ шестнадцатеричный','D3A6',0),(8,2,'А,Б,В,Г А-0,Б-11,В-100,Г-011 ГБАВАВГ восьмеричный','151646',0),(9,2,'А,Б,В,Г А-00,Б-10,В-010,Г-101 БАБВГВ шестнадцатеричный','44AA',0),(10,3,'10101010_2-252_8+7_{16}','7',0),(11,3,'10101010_2-250_8+7_{16}','9',0),(12,3,'10101011_2-250_8+7_{16}','8',0),(13,3,'10101110_2-256_8+A_{16}','10',0),(14,3,'B9_{16}-271_8','0',0),(15,3,'253_8-AB_{16}','0',0);
+INSERT INTO `input` VALUES (1,1,'О,В,Д,П,А 0,1,2,3,4 ВОДОПАД шестнадцатеричным','22162',1),(2,1,'Д,Х,Р,О,В 0,1,2,3,4 ХОРОВОД восьмеричным','36714',1),(3,1,'О,К,Г,Д,Р 0,1,2,3,4 ГОРОДОК восьмеричным','42061',1),(4,1,'Х,Е,Л,О,Д 0,1,2,3,4 ЛЕДОХОД шестнадцатеричным','999C',1),(5,1,'И,Д,Т,О,Х 0,1,2,3,4 ТИХОХОД шестнадцатеричным','89CD',1),(6,2,'А,Б,В,Г А-10,Б-11,В-110,Г-0 ВБГАГВ шестнадцатеричный','5B1A',1),(7,2,'А,Б,В,Г А-10,Б-11,В-110,Г-0 ВАГБААГВ шестнадцатеричный','D3A6',1),(8,2,'А,Б,В,Г А-0,Б-11,В-100,Г-011 ГБАВАВГ восьмеричный','151646',1),(9,2,'А,Б,В,Г А-00,Б-10,В-010,Г-101 БАБВГВ шестнадцатеричный','44AA',1),(10,3,'10101010_2-252_8+7_{16}','7',1),(11,3,'10101010_2-250_8+7_{16}','9',1),(12,3,'10101011_2-250_8+7_{16}','8',1),(13,3,'10101110_2-256_8+A_{16}','10',1),(14,3,'B9_{16}-271_8','0',1),(15,3,'253_8-AB_{16}','0',1);
 /*!40000 ALTER TABLE `input` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -188,7 +190,7 @@ CREATE TABLE `problem` (
   CONSTRAINT `fk_problem_type` FOREIGN KEY (`problem_type_id`) REFERENCES `problem_type` (`problem_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_solution` FOREIGN KEY (`problem_solution`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_statement` FOREIGN KEY (`problem_statement`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -197,6 +199,7 @@ CREATE TABLE `problem` (
 
 LOCK TABLES `problem` WRITE;
 /*!40000 ALTER TABLE `problem` DISABLE KEYS */;
+INSERT INTO `problem` VALUES (57,95,'22162',94,'2019-05-22 10:17:31','2019-05-22 10:17:31',1,5,2019),(59,97,'42061',94,'2019-05-22 10:17:39','2019-05-22 10:17:39',1,5,2019),(60,98,'999C',94,'2019-05-22 10:17:42','2019-05-22 10:17:42',1,5,2019),(61,99,'89CD',94,'2019-05-22 10:17:46','2019-05-22 10:17:46',1,5,2019),(62,101,'5B1A',100,'2019-05-22 10:17:54','2019-05-22 10:17:54',1,5,2018),(63,102,'D3A6',100,'2019-05-22 10:17:57','2019-05-22 10:17:57',1,5,2018),(64,103,'151646',100,'2019-05-22 10:18:01','2019-05-22 10:18:01',1,5,2018),(65,104,'44AA',100,'2019-05-22 10:18:05','2019-05-22 10:18:05',1,5,2018),(66,106,'7',105,'2019-05-22 10:18:12','2019-05-22 10:18:12',4,1,2016),(67,107,'9',105,'2019-05-22 10:18:17','2019-05-22 10:18:17',4,1,2016),(68,108,'8',105,'2019-05-22 10:18:21','2019-05-22 10:18:21',4,1,2016),(69,109,'10',105,'2019-05-22 10:18:25','2019-05-22 10:18:25',4,1,2016),(70,110,'0',105,'2019-05-22 10:18:29','2019-05-22 10:18:29',4,1,2016),(71,111,'0',105,'2019-05-22 10:18:33','2019-05-22 10:18:33',4,1,2016),(72,112,'36714',94,'2019-06-15 09:26:23','2019-06-15 09:26:23',1,5,2019);
 /*!40000 ALTER TABLE `problem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -245,7 +248,7 @@ CREATE TABLE `resource` (
   KEY `fk_resource_type_idx` (`resource_type_id`),
   CONSTRAINT `fk_resource_collection` FOREIGN KEY (`resource_collection_id`) REFERENCES `resource_collection` (`resource_collection_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_resource_type` FOREIGN KEY (`resource_type_id`) REFERENCES `resource_type` (`resource_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=254 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -254,6 +257,7 @@ CREATE TABLE `resource` (
 
 LOCK TABLES `resource` WRITE;
 /*!40000 ALTER TABLE `resource` DISABLE KEYS */;
+INSERT INTO `resource` VALUES (216,94,'1.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1.pdf',2),(217,94,'1(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1(1).png',1),(218,95,'1-1.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-1.pdf',2),(219,95,'1-1(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-1(1).png',1),(222,97,'1-3.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-3.pdf',2),(223,97,'1-3(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-3(1).png',1),(224,98,'1-4.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-4.pdf',2),(225,98,'1-4(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-4(1).png',1),(226,99,'1-5.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-5.pdf',2),(227,99,'1-5(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-5(1).png',1),(228,100,'2.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2.pdf',2),(229,100,'2(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2(1).png',1),(230,101,'2-6.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-6.pdf',2),(231,101,'2-6(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-6(1).png',1),(232,102,'2-7.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-7.pdf',2),(233,102,'2-7(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-7(1).png',1),(234,103,'2-8.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-8.pdf',2),(235,103,'2-8(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-8(1).png',1),(236,104,'2-9.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-9.pdf',2),(237,104,'2-9(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/2-9(1).png',1),(238,105,'3.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3.pdf',2),(239,105,'3(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3(1).png',1),(240,106,'3-10.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-10.pdf',2),(241,106,'3-10(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-10(1).png',1),(242,107,'3-11.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-11.pdf',2),(243,107,'3-11(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-11(1).png',1),(244,108,'3-12.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-12.pdf',2),(245,108,'3-12(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-12(1).png',1),(246,109,'3-13.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-13.pdf',2),(247,109,'3-13(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-13(1).png',1),(248,110,'3-14.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-14.pdf',2),(249,110,'3-14(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-14(1).png',1),(250,111,'3-15.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-15.pdf',2),(251,111,'3-15(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/3-15(1).png',1),(252,112,'1-2.pdf','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-2.pdf',2),(253,112,'1-2(1).png','http://kappa.cs.petrsu.ru/~nestulov/API/v2/files/resources/1-2(1).png',1);
 /*!40000 ALTER TABLE `resource` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -267,7 +271,7 @@ DROP TABLE IF EXISTS `resource_collection`;
 CREATE TABLE `resource_collection` (
   `resource_collection_id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`resource_collection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -276,7 +280,7 @@ CREATE TABLE `resource_collection` (
 
 LOCK TABLES `resource_collection` WRITE;
 /*!40000 ALTER TABLE `resource_collection` DISABLE KEYS */;
-INSERT INTO `resource_collection` VALUES (1);
+INSERT INTO `resource_collection` VALUES (1),(94),(95),(96),(97),(98),(99),(100),(101),(102),(103),(104),(105),(106),(107),(108),(109),(110),(111),(112);
 /*!40000 ALTER TABLE `resource_collection` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -291,7 +295,8 @@ CREATE TABLE `resource_type` (
   `resource_type_id` int(11) NOT NULL AUTO_INCREMENT,
   `resource_type_name` varchar(255) DEFAULT NULL,
   `resource_type_code` varchar(255) NOT NULL,
-  PRIMARY KEY (`resource_type_id`)
+  PRIMARY KEY (`resource_type_id`),
+  KEY `resource_type_code_idx` (`resource_type_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -301,7 +306,7 @@ CREATE TABLE `resource_type` (
 
 LOCK TABLES `resource_type` WRITE;
 /*!40000 ALTER TABLE `resource_type` DISABLE KEYS */;
-INSERT INTO `resource_type` VALUES (1,'Текст, содержащий необходимую информацию','текст'),(2,'Ссылка на pdf-файл, содержащий необходимую информацию','pdf'),(3,'Ссылка на изображение, содержащее необходимую информацию','изображение'),(4,'Ссылка на страницу в сети Интернет, содержащую необходимую информацию','ссылка');
+INSERT INTO `resource_type` VALUES (1,'Ссылка на изображение, содержащее необходимую информацию','изображение'),(2,'Ссылка на pdf-файл, содержащий необходимую информацию','pdf');
 /*!40000 ALTER TABLE `resource_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -321,7 +326,7 @@ CREATE TABLE `solution_resource_collection` (
   KEY `fk_src_variant` (`variant`),
   CONSTRAINT `fk_src_resource_collection` FOREIGN KEY (`resource_collection`) REFERENCES `resource_collection` (`resource_collection_id`),
   CONSTRAINT `fk_src_variant` FOREIGN KEY (`variant`) REFERENCES `variant` (`variant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -330,6 +335,7 @@ CREATE TABLE `solution_resource_collection` (
 
 LOCK TABLES `solution_resource_collection` WRITE;
 /*!40000 ALTER TABLE `solution_resource_collection` DISABLE KEYS */;
+INSERT INTO `solution_resource_collection` VALUES (6,1,94),(7,2,100),(8,3,105);
 /*!40000 ALTER TABLE `solution_resource_collection` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -372,14 +378,14 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_created` timestamp NULL DEFAULT NULL,
+  `user_created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `preferred_resource_type` int(11) NOT NULL,
   `user_vk_id` int(11) NOT NULL,
   `year_range` year(4) NOT NULL,
   PRIMARY KEY (`user_id`),
   KEY `fk_preferred_resource_type_idx` (`preferred_resource_type`),
   CONSTRAINT `fk_preferred_resource_type` FOREIGN KEY (`preferred_resource_type`) REFERENCES `resource_type` (`resource_type_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -388,7 +394,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (48,'2019-05-15 14:55:53',2,1,2017),(51,'2019-05-15 16:05:04',4,2,2019);
+INSERT INTO `user` VALUES (48,'2019-06-12 14:55:36',1,1,2018),(52,'2019-06-13 19:48:26',1,43820622,2013),(53,'2019-06-16 13:29:22',2,19357976,2019);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -431,4 +437,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-22 12:48:56
+-- Dump completed on 2019-09-22 23:53:28

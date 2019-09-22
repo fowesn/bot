@@ -919,13 +919,6 @@ $app->put('/users/{user}/resource', function (Request $request, Response $respon
             sprintf(PARAMETER_REQUIRED, 'resource_type'),
             400);
     }
-    if (!preg_match('/^[а-яёa-z]+$/msiu', $resource_type))
-    {
-        return $requestErrorHandler(
-            $response,
-            sprintf(WRONG_PARAMETER_TYPE, 'resource_type', 'alphabetical characters only string'),
-            400);
-    }
     unset($requestBody['resource_type']);
 
 
